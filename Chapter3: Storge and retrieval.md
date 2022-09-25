@@ -154,13 +154,21 @@ crash recovery，内存直接丢了。 解法：write-ahead， write之前，先
 **memory bandwidth and vectorized processing**
 这块书中描述比较简略，可以参考书中引用深入
 
+### Sort Order in Column Storage
+1. column元素如果要重排序（即在原本append插入顺序的基础上，重排序），需要同一行一起排，否则将找不到属于同一行的column
+2. DBA可以参照日常query分布来决定按照哪个column来排序(如date)。也可以分一级、二级sort key，是级联的
+3. 优点：加速查询（前缀索引的效果）；排序的列更容易压缩，因为相同的值连续排列
+4. 多种排序共存：可以在分布式replication存储上，使用不同的排序方式。然后在查询的时候，挑选最适合当前query的排序。 和row-oriented不同的地方在于，column-orinted实实在在存了多次，而row-oriented可以只存不同的索引，原始数据只有一份
 
+### Writing to Column-Oriented Storage
 
+基于以上对column-oriented的描述，怎么write?
 
+1. 类似LSM-tree，先在内存里积累，然后和disk上的数据merge，保持disk上的列存、有序
+2. 查询需要结合memory和disk上的数据
 
-
-
-
-
-
+### Aggregation: Data Cubes and Materialized Views
+1. 物化视图：轻度聚合，单独存储。 不想OLTP db里的视图，只是一层虚拟视图，查询视图的sql会转为查询table的sql，做不到加速查询，只是抽象对外的接口
+2. 优势：加速SUM等特定的聚合查询
+3. 劣势：写成本较大（但是对于“重读”的数仓，用空间来换时间还是划算的）；对应需要从最细粒度原始数据的查询无能为力，比如查询分位值等
 
