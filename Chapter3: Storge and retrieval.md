@@ -69,7 +69,7 @@ crash recovery，内存直接丢了。 解法：write-ahead， write之前，先
 5. level：一般3、4层就够
    >A four-level tree of 4 KB pages with a branching factor of 500 can store up to 256 TB
    
-![](/books/DDIA/b-tree_structure.png)
+![](/images/b-tree_structure.png)
 
 ### reliability(p82)
 1. 现象：B-tree的update操作是直接disk原地更改，包括insert时候可能触发的page split
@@ -113,6 +113,49 @@ crash recovery，内存直接丢了。 解法：write-ahead， write之前，先
 1. 完全使用内存，然后使用snapshot，分布式，带电池的RAM，NVM（断电后仍可保存数据的内存新型硬件）等方式提供reliability
 2. 反直觉地，in-memory database快并不是因为不用从disk读。  内存足够大的话，OS会把最近用的cache到memory。 主要的“快”来自于不用把内存里的数据合适方式编码后存储到disk。  因此，in-memory还有一个优点，是可以提供更复杂的数据结构（如redis）
 3. 另外，即便使用类似OS的方式，把很久没用到的spill到disk，再把最近用到的加载到内存。  但是相比OS是以page的粒度，in-memory db可以以record的粒度来做，粒度更精细
+
+
+# Transaction Processing or Analytics?
+这节没讲的内容都太熟了，没啥可以记的，就放个比较olap和oltp的图吧
+![](/images/diff-olap-oltp.png)
+
+## Column-Oriented Storage
+
+1. 列存：想法很简单，就是把每一列的相近数据存在一起，列间拆分。而不是把相近的行存在一起。
+2. 试用场景：analytics/olap, 查询中scan的列较少，但是scan大量的row。 如果行存，会导致药scan几乎所有的数据进内存
+
+![](/images/relational2column.png)
+
+如图，列存中有一个关键点，每列中包含的行顺序要一致
+
+### Column Compression
+
+**bitmap encoding** 是一种有效的压缩方法
+
+1. column的distinct value肯定少于row的disitnct
+2. 用n个不同的数代表column所有的distinct value（类似hashmap）。  bitmap的每个bit位代表一个row，顺序也和row对应
+3. 当数据量很大的时候，bitmap中的1会很稀疏。可以使用run-length encoding解决
+4. 用bitmap之间位运算来实现OR、AND where conditions。得益于每个bitmap的二进制位数相同（行数相同）；且即使column不同，行的顺序也相同
+```sql
+   WHERE product_sk IN (30, 68, 69)
+   -- Load the three bitmaps for product_sk = 30, 68, 69
+   -- calculate the bitwise OR of the three bitmaps
+   -- then，那些bit位为1的，就是要查询的行。可以借此拿到行对应的索引（顺序相同）
+
+   WHERE product_sk = 31 AND store_sk = 3
+   -- Load the bitmaps for product_sk = 31, store_sk = 3
+   -- calculate the bitwise AND
+   -- 符合这个条件的行，行内product_sk=31和store_sk=3同时成立，即两个bitmap的同一bit位（对应行），值都是1
+```
+
+详细见图：
+![](/images/column-compression.png)
+
+**memory bandwidth and vectorized processing**
+这块书中描述比较简略，可以参考书中引用深入
+
+
+
 
 
 
