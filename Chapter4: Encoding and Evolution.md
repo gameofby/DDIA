@@ -63,5 +63,83 @@ Protocol buffer
 基本和CompactProtocol一致
 ![](/images/protocolbuffer.png)
 
+### Field tags and schema evolution
+1. 新增字段：如果是required，new code读取old data会fail。所以为了向后兼容，新增的字段只能是optional, 或者包含default value
+2. 删除field
+   - 只能删optional。 如果删除了required, 老代码读新数据会报错
+   - 删除的tag number不能再次用于其他field。  否则新代码读老数据会出错
+
+### Datatypes and schema evolution
+3. 更改数据类型：有截断风险。 如int32改为int64，向后兼容会截断
+4. 更改optional/repeated/required等属性：pb中list表达为repeated。  提供了一种可能性，可以将optional改为repeated。 向后兼容，会读到list最后一个元素，多余的视为0；向前兼容，list的元素数量为0或1。  Thrift有专门的list类型，所以没法这么改
+
+## Avro
+由于Thrift不适用于Hadoop的使用场景，Avro作为Hadoop的子项目在2009年开始研发
+
+two schema languages
+1. Avro IDL: intended for human editing
+   ```c++
+    record Person {
+        string userName;
+        union { null, long } favoriteNumber = null;
+        array<string> interests;
+    }
+   ```
+2. based onJSON: more easily machine-readable
+   ```json
+    {
+        "type": "record",
+        "name": "Person",
+        "fields": [
+            {"name": "userName", "type": "string"},
+            {"name": "favoriteNumber", "type": ["null", "long"], "default": null},
+            {"name": "interests", "type": {"type": "array", "items": "string"}}
+        ]
+    }
+   ```
+
+Avro和Thrift/Pb的异同
+1. 不同：没有tag number for field；没有data type
+2. 相同：也用了变长整型
+
+![](/images/avro.png)
+
+
+### The writer’s schema and the reader’s schema
+> The key idea with Avro is that the writer’s schema and the reader’s schema don’t have to be the same—they only need to be compatible.
+
+read的时候，用write schema解析，然后对比两个schema的field name，把数据从write schema 转换到 read schema。转换中，可能调整顺序、变换数据类型、空字段赋默认值等等。如图：
+![](/images/avro-reader2writer-schema.png)
+
+### Schema evolution rules
+1. >To maintain compatibility, you may only add or remove a field that has a default value.
+2. change field datatype: provided that Avro can convert the type
+3. change field name：可以用alias，老的名字还是得在，用于匹配。  只能向后兼容
+
+### But what is the writer’s schema?
+reader是怎么拿到writer的schema的？看情况
+
+1. Large file with lots of records: include the writer’s schema once at the beginning of the file
+2. Database with individually written records: 使用专门的database存储schema，维护版本。encoding file里带上version number
+3. Sending records over a network connection: 在网络连接建立的时候，传输schema version number，然后在整个connection过程中使用改schema
+
+### Dynamically generated schemas
+
+以关系型数据库数据导出为例。Avro可以每次导出时按照最新的源数据schema动态生成新的schema。reader可以按照field name，识别新老数据
+
+### Code generation and dynamically typed languages
+
+
+1. 动态语言没有编译环节。生成的代码不经过编译的校验，有风险
+2. Avro也为静态语言提供了code generation。基于使用场景，Avro可以从自描述（self-describing）的源文件中直接读取metadata(schema)，不一定用得到code generation
+
+## The Merits of Schemas
+binary encoding based on schema相比于JSON、XML等的优势
+1. 更紧凑，省空间
+2. schema是比document更好的一种方式。因为要实际用于解码，所以可以保持最新状态。如果是json，靠人工document的方式记录schema，很可能逐渐失控
+3. schema database的多版本管理，允许做向前向后是否兼容的check
+4. code generation for静态语言，可以在代码编译环节校正确性、兼容性等
+
+
 
    
