@@ -1,5 +1,5 @@
-1. 向前兼容：新代码可以读老代码生成的老数据
-2. 向后兼容：老代码可以读新代码生成的新数据
+1. 向前兼容：新代码可以读老代码生成的老数据。或者对于service间调用，是新server向老client respond数据
+2. 向后兼容：老代码可以读新代码生成的新数据。或者对于service间调用，是老client向新server request数据
 
 为什么需要向前向后兼容？
 1. 大型后端应用一般都有灰度发布的需求
@@ -139,6 +139,49 @@ binary encoding based on schema相比于JSON、XML等的优势
 2. schema是比document更好的一种方式。因为要实际用于解码，所以可以保持最新状态。如果是json，靠人工document的方式记录schema，很可能逐渐失控
 3. schema database的多版本管理，允许做向前向后是否兼容的check
 4. code generation for静态语言，可以在代码编译环节校正确性、兼容性等
+
+# Modes of Dataflow
+
+## Dataflow Through Databases
+
+preservation of unknown fields: 前面提到的encoding formats，支持向前兼容的情况下，old code虽然不识别new field，需要能在update时保证其完好无损。   encoding file通过old code反序列化为obejct，在重新encode到数据库，很容易丢掉new field
+！[](/images/preservation-unknow-field.png)
+
+### Different values written at different times
+schema change（比如加字短）的时候，如果老数据完全改换新的schema，数据全刷一遍的成本太高。  因此都是DB底层做兼容。 例如read老数据的时候，对不存在的column赋予默认值
+
+schema evolution使得schema展示唯一，但实际上底层的数据因时间而有差异。  DB做了中间的兼容
+
+### Archival storage
+dump数据的各种场景（如snapshot、analytic warehouse等），即使源数据存在多个版本的encoding，在dump的时候一律按照latest schema dump。  因为反正要全扫一遍
+
+## Dataflow Through Services: REST and RPC
+### Web services
+比较了下REST和SOAP
+
+### The problems with remote procedure calls (RPCs)
+RPC本身的定义想将网络请求封装成和本次函数调用一样丝滑。但实际上和本地函数调用还是有很多不一样的地方：书中列了6点。 因此，没有必要非得把remote service和本地function调用搞到一起，本质上就是两件事
+
+### Current directions for RPC
+1. gRPC: using Protocol Buffers
+2. Finagle: using Thrift
+3. Rest.li: using JSON over HTTP
+
+总结来，REST主宰了API； RPC主要用于同组织内不同service间的请求
+
+
+### Data encoding and evolution for RPC
+一般都是server先更新，client后更新。从API的角度，向前向后兼容对应于：
+1. 向前：老client解读新server的respond的新API数据
+2. 向后：新server接收老client request的老API的数据
+
+RPC的向前向后兼容能力，来自其使用的encoding formats
+
+API的版本管理：
+1. RESTful中，在URL或者HTTP Accept header使用version number维护版本
+2. 对于一些使用API密钥来鉴别特定client的服务，通常把版本存在server，经由单独的接口来管理版本
+
+
 
 
 
