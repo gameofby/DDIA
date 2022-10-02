@@ -182,6 +182,13 @@ API的版本管理：
 2. 对于一些使用API密钥来鉴别特定client的服务，通常把版本存在server，经由单独的接口来管理版本
 
 
+## Message-Passing Dataflow
+介绍了下面内容，比较常识，就不细总结了
+1. MQ相比于RPC的好处
+2. MQ的基本设定
+3. 一种分布式并发控制的框架- Distributed actor framework。 也用到了MQ，来实现位置透明
+
+
 
 
 
