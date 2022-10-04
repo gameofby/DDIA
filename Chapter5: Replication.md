@@ -50,8 +50,10 @@ follower挂掉恢复时，根据自己的log，定位最后一个处理的write�
 - timeout时长设定。 设长了，failover会很不及时；设短了，又有可能频繁触发本不应该failover的failover，雪崩
 
 ## Implementation of Replication Logs
+这一小节讨论leader和follower之间同步使用的具体log设计
+
 ### Statement-based replication
-最直观简单的一种方法。就是leader的每个wirte操作都打log，然后把log传输到follower一样执行。缺陷：
+最直观简单的一种方法。就是leader的每个wirte statement（比如每一条SQL）打log，然后把statement传输到follower一样执行。缺陷：
 1. 非确定性函数，如NOW(), RAND()等，多个follower执行后会有diff
 2. 自增列，需要每个replica按照和leader一样的顺序执行。  实现这点，会限制并发事务
 3. 有副作用的函数，并且副作用不是确定性的。 如触发器、stored procedures, UDF等
@@ -61,10 +63,28 @@ follower挂掉恢复时，根据自己的log，定位最后一个处理的write�
 MySQL在5.1之前用的就是statement-based replication。新版本的默认方式，已经更换为row-based replication
 
 ### Write-ahead log (WAL) shipping
-如Chapter2所述的LSM-Tree和B-Tree，都有类似Write-ahead log（WAL）类似的磁盘存储结构。可以直接使用WAL新增一个node。
+如Chapter2所述的LSM-Tree和B-Tree，都有类似Write-ahead log（WAL）的log存储。可以直接使用WAL作为leader和follower之间同步的数据
 
-- 劣势：WAL比较底层，到了disk block级别，和存储引擎耦合太紧密，不利于升级存储格式版本等
+- 劣势：WAL比较底层，到了disk block级别，如何解读WAL依赖存储引擎。 WAL和存储引擎耦合太紧密。如果存储引擎升级版本，难以做到向前向后兼容
 - replication协议支持版本兼容的重要性：可以做到zero-downtime升级。  方法是，先升级follower，然后通过一次failover实现leader更换
+
+### Logical(row-based) log replication
+核心思路：log存储格式和存储引擎解耦。具体如下：
+
+1. insert: log record包含每一列的value
+2. delete: 通过主键定位。没有主键的表，log包含待删除数据的每一列value
+3. update: 2 + 1。 insert可以只有那些待update的列的value
+
+事务除了产生多条类似的log record，还会在结尾多一条，用于说明以上log已经commit。
+
+MySQL的binlog就使用的Logical Log
+
+这种log还有一种好处，就是便于和外部交互。比如ETL到数仓，或者允许外部自定义index、cache等
+
+### Trigger-based replication
+DB自带的replication能力，纯粹由DB来实现，可以应对大部分情况。  个别情况下，如果需要实现一些自定义的replication，灵活性就不太够。因此，一些DB（比如Oracle GoldenGate）提供了工具，可以支持更灵活的replication。    工具一般是借由DB的trigger能力来实现。  可以在发生change的情况下，触发一段custom code来执行自定义的replication
+
+# Problems with Replication Lag
 
 
 
