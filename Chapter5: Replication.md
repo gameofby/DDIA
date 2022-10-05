@@ -40,7 +40,7 @@ follower挂掉恢复时，根据自己的log，定位最后一个处理的write�
 
 自动故障转移的步骤：
 1. 判断leader是否failed: 设定超时时间
-2. 选择一个新leader: 通常选择changes同步最新（相比于old leader最接近的）的replica。 所有节点同意新leader选举，被称为consensus problem，会在Chapter9详述
+2. 选择一个新leader: 通常选择changes同步最新（相比于old leader最接近的）的replica。 所有replica同意新leader选举，被称为consensus problem，会在Chapter9详述
 3. client、follower都要重新配置，与new leader进行交互。  如果old leader后来又恢复了，系统机制需保证它变为follower，避免多leader冲突
 
 故障转移很容易出错：
@@ -85,6 +85,41 @@ MySQL的binlog就使用的Logical Log
 DB自带的replication能力，纯粹由DB来实现，可以应对大部分情况。  个别情况下，如果需要实现一些自定义的replication，灵活性就不太够。因此，一些DB（比如Oracle GoldenGate）提供了工具，可以支持更灵活的replication。    工具一般是借由DB的trigger能力来实现。  可以在发生change的情况下，触发一段custom code来执行自定义的replication
 
 # Problems with Replication Lag
+在异步replication的架构中，虽然非常适用于read-scaling（读多写少，可以通过不断拓展node来实现scalability）的场景。但如果replica过多，或者遇到网络问题，难免follower落后（lag）于leader，consistency得不到保障。落后过大会实际地影响到产品和用户。 本节主要介绍3种典型情况，以及解决手段
+
+## Reading Your Own Writes
+适用场景：一个用户write的内容，只能被这个用户本身read。  比如个人主页、自己的评论等等
+
+一致性解决方法：`read-after-write consistency` (aka `read-your-writes consistency`)。具体实现：
+- 用户可能修改的（比如自己的主页），都从leader读，其他（比如他人的主页）从follower读。 
+- 上一条不适用于“应用的大部分内容都可能被所有用户修改”的情况，这样leader要承担大部分写、读，扛不住。  这种情况下，需要增加一些其他手段。  比如：记录最后一次更新时间，紧接着1分钟内的read都从leader读；1分钟之外的，如果监控发现follower滞后超过1分钟，也从leader读，否则就可以直接从follower读
+- 客户端记录最后一次write时间戳。follower上读的时候，要求至少该时间戳之前的update replication都要完成，才能读。 时间戳可以是逻辑时钟（标明先后顺序的，比如log sequence number），或者system clock（对各个replica间的clock同步有强依赖）
+- 多地域datacenter的情况下，如果必须从leader读，可能需要先路由到leader所在的datacenter
+
+同用户多设备的情况，方法需要进一步设计：
+1. 时间戳的记录，不能在单个client上了。需要集中在一个地方
+2. 多地域datacenter的情况，也需要额外手段路由到同一个datacenter。  默认情况下，不同设备使用的网络不同，很有可能请求没打到同一个datacenter
+
+## Monotonic（单调） Reads
+情景: `moving backward in time`
+用户连续多次read（比如刷新网页），后read相比于先read看到的信息反而变少了（比如第一次看到一条新评论，刷新下又没了）。  这种是因为，两次read被随机到两个不同的replica上，后者比前者的replication滞后更严重。如下图
+![](/images/moving-back-in-time.png)
+
+解决办法：`monotonic reads`
+含义：通过将同一用户的多次read固定到同一个replica等方式，实现一致性。 这种一致性强于最终一致性，弱于强一致性（因为用户只是不会后退，但不代表可以及时看到leader已经发生的所有更新。比如有其他用户新发了评论，有些用户看到了，有些没看到。 
+具体实现：如何把同拥护的read请求固定到同一个replica响应？比如哈希拥护id等方式。  如果对应replica挂了，就不得不换一个replica，还是可能打破一致性
+
+## Consistent Prefix Reads
+情景：因果性（先后顺序）被破坏。具体见图
+![](/images/consistent-prefix-reads.png)
+
+解法：`consistent prefix reads`。听起来很好实现，wirte保持顺序，read按顺序读。  但实际上，尤其在partitioned(sharded)类型的DB种，无法保证全局写的order。  可以尝试把有因果性的wirte都写入到同一个partition，但实际实现起来，可以无法保证执行效率。   有一些算法可以进一步解决，详见书的p186。
+
+## Solutions for Replication Lag
+- 对于只能保证最终一致性的系统，要结合具体情况，判断下replication lag的具体影响。 在异步的基础上制造出同步的效果，是解决最终一致性影响的秘诀
+- 通过application code来实现read-after-write、monotonic reads、consistent prefix reads等，是复杂的。  这也是transaction存在的意义，DB解决问题，对开发者透明
+- transaction在单机早就实现了。 但是到了分布式系统，很多人抛弃了它，出于性能、可用性等原因。或许有些道理，但过于简单化。  Chapter7 and Chapter9会详细讨论解法
+
 
 
 
