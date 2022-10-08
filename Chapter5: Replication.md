@@ -120,8 +120,45 @@ DB自带的replication能力，纯粹由DB来实现，可以应对大部分情�
 - 通过application code来实现read-after-write、monotonic reads、consistent prefix reads等，是复杂的。  这也是transaction存在的意义，DB解决问题，对开发者透明
 - transaction在单机早就实现了。 但是到了分布式系统，很多人抛弃了它，出于性能、可用性等原因。或许有些道理，但过于简单化。  Chapter7 and Chapter9会详细讨论解法
 
+# Multi-Leader Replication
+
+## Use Cases for Multi-Leader Replication
+
+### Multi-datacenter operation
+
+datacenter内使用如前所述的leader-follower replication；datacenter之间，leader互相replication
+![](/images/multi-datacenter.png)
+
+优势：
+1. Performance: 不用所有write都路由到唯一一个datacenter的leader；local解决write，datacenter间的replication异步完成。观感上性能好很多
+2. Tolerance of datacenter outages: 如果leader所在的datacenter挂了，不用做failover。
+3. Tolerance of network problems: single-leader，write如果是跨地域的，需要依赖于datacenter之间基于公网的网络连接，容易不稳定。multi-leader，write都是在local的datacenter完成，不依赖于跨长距离的公网
+
+劣势：
+多datacenter，同一数据的并发modify，可能产生conflict。  需要在datacenter的leader间做replication时，解决conflict。
 
 
+总的来说，multi-leader和一些DB早有的feature之间，可能产生隐患和问题，比如自增id、trigger等。  因此被视为一个存在危险的新feature，应该尽可能避免使用，除非不得不
+
+
+### Clients with offline operation
+以canlendar场景为例，多设备间需要同步，断网状态下calendar也能要继续使用。类似于一个微缩的multi-datacenter replication, leader是每个device的local小DB
+
+### Collaborative editing
+多人在线协作的场景。  相比于上个canlendar的例子，特别需要处理的是conflict。 类似multi-datacenter replication的方式，使得多用户可以同步编辑，不用获取lock，但是需要在异步replication的时候处理conflict
+
+## Handling Write Conflicts
+
+### Synchronous versus asynchronous conflict detection
+如果要能synchronous检测冲突，就是single-leader了
+
+### Conflict avoidance
+solution
+> all writes for a particular record go through the same leader
+
+对于不得不更换datacenter的场景（fail; 用户换了地域，最近的datacenter发生变化），conflict还是会发生
+
+### Converging toward a consistent state
 
 # Todo
 p159, `触发器`, `stored procedures`
