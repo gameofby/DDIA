@@ -135,7 +135,7 @@ datacenter内使用如前所述的leader-follower replication；datacenter之间
 3. Tolerance of network problems: single-leader，write如果是跨地域的，需要依赖于datacenter之间基于公网的网络连接，容易不稳定。multi-leader，write都是在local的datacenter完成，不依赖于跨长距离的公网
 
 劣势：
-多datacenter，同一数据的并发modify，可能产生conflict。  需要在datacenter的leader间做replication时，解决conflict。
+多datacenter，同一数据的多地域并发modify，可能产生conflict。  需要多datacenter的leader间replication时先解决conflict。
 
 
 总的来说，multi-leader和一些DB早有的feature之间，可能产生隐患和问题，比如自增id、trigger等。  因此被视为一个存在危险的新feature，应该尽可能避免使用，除非不得不
@@ -150,15 +150,46 @@ datacenter内使用如前所述的leader-follower replication；datacenter之间
 ## Handling Write Conflicts
 
 ### Synchronous versus asynchronous conflict detection
-如果要能synchronous检测冲突，就是single-leader了
+如果通过synchronous的方式检测冲突，就是single-leader了
 
 ### Conflict avoidance
 solution
 > all writes for a particular record go through the same leader
 
-对于不得不更换datacenter的场景（fail; 用户换了地域，最近的datacenter发生变化），conflict还是会发生
+对于不得不更换datacenter的场景（fail; 用户换了地域，最近的datacenter更换），conflict还是会发生
 
-### Converging toward a consistent state
+### Converging（收敛） toward a consistent state
+
+为了datacenter间的最终一致性，需要将冲突收敛。有一下几种方式:
+1. 每个write赋予一个unique id(如时间戳、随机数、UUID等)，then `pick the write with the highest ID as the winner, and throw away the other writes`. 可能导致data loss
+2. 每个replica指定一个unique id，以其中一个id最大的replica的write为准。 也可能导致data loss
+3. > Somehow merge the values together—e.g., order them alphabetically and then concatenate them
+4. 把冲突记录到单独的地方，之后再图解决。 比如抛给用户（ confluence的wiki，不就这么搞的）
+
+### Custom conflict resolution logic
+- On write: 用户可以写一段 `conflict handler` 代码，在detect到conflict的时候调用来解决冲突
+- On read: 
+  1. store conflict
+  2. return all versions when reading
+  3. user or application code resolve conflict
+  4. write result back
+
+conflict resolution粒度: 通常在row、document粒度，而不是transaction
+
+Automatic Conflict Resolution: 书中提了一些自动解决冲突的新研究成果
+
+## Multi-Leader Replication Topologies
+讲leader之间按照怎样的path（topology）左replication。 有三种方式：
+![](/images/multi-leader-replication-toloplogy.png)
+
+- MySQL用的circular topology
+- > In circular and star topologies, a write may need to pass through several nodes before it reaches all replicas
+- circular和star的topologies，相比于all-to-all，容错性较差，一个node fail就可能导致replication停滞。      虽然可以绕过failed node，但是在很多系统中，这个需要手动配置
+
+很多系统`conflict detection`做的很差。所以，使用multi-leader的分布式系统，需要特别注意其具体的实现、充分测试，才能保证不用错。    因为system在设计实现上本身不完善，一不小心就掉坑里了
+
+# Leaderless Replication
+
 
 # Todo
 p159, `触发器`, `stored procedures`
