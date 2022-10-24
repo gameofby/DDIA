@@ -189,7 +189,14 @@ Automatic Conflict Resolution: 书中提了一些自动解决冲突的新研究�
 很多系统`conflict detection`做的很差。所以，使用multi-leader的分布式系统，需要特别注意其具体的实现、充分测试，才能保证不用错。    因为system在设计实现上本身不完善，一不小心就掉坑里了
 
 # Leaderless Replication
+- 有leader架构的核心特点：leader来决定write的执行顺序，follower复刻即可
+- leaderless早就有了，只是在relational DB时代被遗忘。  直到amazon厂内的Dynamo重新启用。开源的Riak, Cassandra, and Voldemort也开始借鉴。因此被称为 `Dynamo-style`
+- leaderless实现上，client直接发给所有的replica，或者由coordinator转发。 但是coordinator不强制write的顺序
 
+## Writing to the Database When a Node Is Down
+leaderless设计中，client将write同时发送给各个replica，其中个别失败的node不阻塞client判定write成功； client读取数据时，也要想各个replica都发送请求，根据返回数据的version number，判断哪个数据时最新的。避免有node失败期间遗漏write导致数据滞后
+
+### Read repair and anti-entropy
 
 # Todo
 p159, `触发器`, `stored procedures`
