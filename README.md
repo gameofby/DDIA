@@ -1,2 +1,2 @@
 # DDIA
-notes of [Designing data-intensive applications] book
+Notes on reading [Designing data-intensive applications]
