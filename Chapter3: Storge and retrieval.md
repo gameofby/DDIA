@@ -3,9 +3,11 @@
 
 **基本结构(p72-p75)：**
 
-1. 内存：使用hashmap。hashmap的value存储实际(key, value)在disk file中的offset
-2. 磁盘：segments and compaction
-3. 其他实现细节
+使用hashmap。hashmap的value存储实际(key, value)在disk file中的offset
+
+磁盘：segments and compaction
+
+其他实现细节
    - File format: binary format. bytes length of string + raw string
    - delete: add a special record called tombstone, for deleting signal in compaction
    - crash recovery: snapshot of memory hash map
