@@ -10,7 +10,18 @@
 >well suited to situations where the value for each key is updated frequently
 
 
-如何避免append filec
+如何避免append file超过了disk space?
+使用segment + compaction
+- segment：将log分割为certain size的segment，如果append已经达到了size，就close，创建一个新的segment来append
+- compaction：起一个background thread，对历史的segments做merge，只保留recent数据（杜宇key value，那就是最新的value； 如果是复杂的store，需要按照既定的规则计算，比如doris）
+
+详细步骤：
+1. read write请求，在**可用**的最新的segments上操作。同时起background thread做compaction
+2. compaction不是in-place，而是开辟新的区域输出结果
+3. compaction结束后，`switch read requests to using the new merged segment`，然后old segments可以简单地删掉
+4. 内存中，每个segment有对应的hashmap
+5. read write请求，会先在最新的hashmap中找，找不到就换第二新的，以此类推
+6. 因为有compaction，hashmap(segment)的数量不会太多
 
 
 其他实现细节
