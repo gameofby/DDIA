@@ -5,7 +5,13 @@
 
 使用hashmap。hashmap的value存储实际(key, value)在disk file中的offset
 
-磁盘：segments and compaction
+适用的场景？
+>Bitcask (the default storage engine in Riak). 
+>well suited to situations where the value for each key is updated frequently
+
+
+如何避免append filec
+
 
 其他实现细节
    - File format: binary format. bytes length of string + raw string
@@ -27,7 +33,7 @@
 
 **application**
 
->Bitcask (the default storage engine in Riak)
+
 
 
 
