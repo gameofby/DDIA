@@ -3,7 +3,7 @@
 
 **基本结构(p72-p75)：**
 
-1. 内存：hashmap
+1. 内存：使用hashmap。hashmap的value存储实际(key, value)在disk file中的offset
 2. 磁盘：segments and compaction
 3. 其他实现细节
    - File format: binary format. bytes length of string + raw string
@@ -22,6 +22,12 @@
 
 1. 依赖内存大小。  如果key数量极大，就不太适用。  基于硬盘实现hashmap，非常复杂，成本较高
 2. range query查询低效
+
+**application**
+
+>Bitcask (the default storage engine in Riak)
+
+
 
 ## 3.1.2 SSTables（Sorted string table） and LSM-Trees
 
