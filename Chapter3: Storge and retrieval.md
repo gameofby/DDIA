@@ -53,7 +53,7 @@
 
 ### 优势（p76-p77）
 1. compaction: 归并排序即可，即使待merge的segments超过了memory size也不影响。同key但value不同的，丢弃更早的value
-2. 内存索引: 因为segment中key是有序的，内存中不必再保留所有的key index。使用稀疏索引，找到被检索key的segment offset的范围
+2. 内存索引: 因为segment中key是有序的，内存中不必再保留所有的key index。使用稀疏索引，找到被检索key的segment offset的范围，再进一步在范围内搜索即可
 3. 压缩：稀疏索引对应的block，可以压缩存储，节省磁盘I/O和space
 4. 支持高效range query，由于disk write是顺序的，可支持很高的写吞吐
 
