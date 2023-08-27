@@ -119,7 +119,7 @@ level：一般3、4层就够
 >pointer to siblings page from left to right in leaf level, which allows scanning keys in order without jumping back to parent pages
 
 
-## Compare B-Trees and LSM_Trees
+## Compare B-Trees and LSM-Trees
 
 ### LSM-tree的优势
 1. lower write amplification: 因此而拥有更好的写吞吐能力
@@ -127,8 +127,11 @@ level：一般3、4层就够
 2. reduced fragmentation: 顺序写入，不像B-tree那么碎片化；更容易压缩；
 
 ### LSM-tree的劣势
-1. >compaction process can sometimes interfere with the performance of ongoing reads and writes.
-2. LSM-tree中，同一个key可能存在于多个segment中；B-tree相反，都在一个page里，更好做读写隔离（如事务的隔离）
+
+compaction额外占用资源，可能影响到正在执行的读写操作
+>compaction process can sometimes interfere with the performance of ongoing reads and writes.
+
+LSM-tree中，同一个key可能存在于多个segment中；B-tree相反，都在一个page里，更好做读写隔离（如事务的隔离）
 
 
 ## Other Indexing Structures
