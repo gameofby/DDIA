@@ -27,7 +27,9 @@
 其他实现细节
    - File format: binary format. bytes length of string + raw string
    - delete: add a special record called tombstone, for deleting signal in compaction
-   - crash recovery: snapshot of memory hash map
+   - crash recovery
+	   - slow: read all segments on disk to restore hashmap in memory
+	   - fast: store snapshot of hashmap. load it to memory when recovering
    - partially written records: use checksum to find it
    - concurrency control: only one writer thread running
 
@@ -41,10 +43,6 @@
 
 1. 依赖内存大小。  如果key数量极大，就不太适用。  基于硬盘实现hashmap，非常复杂，成本较高
 2. range query查询低效
-
-**application**
-
-
 
 
 
