@@ -49,11 +49,11 @@
 ## 3.1.2 SSTables（Sorted string table） and LSM-Trees
 
 ### 基本结构(p76)
-在hash index的segment基础上，要求segment内按照key排序
+在hash index的segment基础上，要求segment内按照key排序。以及，merged segment中，一个key只能出现一次（compaction保证了这一点）
 
 ### 优势（p76-p77）
-1. compaction: 归并排序即可。同key但value不同的，丢弃更早的value
-2. 内存索引: 稀疏索引即可，提供了被检索key的segment offset
+1. compaction: 归并排序即可，即使待merge的segments超过了memory size也不影响。同key但value不同的，丢弃更早的value
+2. 内存索引: 因为segment中key是有序的，内存中不必再保留所有的key index。使用稀疏索引，找到被检索key的segment offset的范围
 3. 压缩：稀疏索引对应的block，可以压缩存储，节省磁盘I/O和space
 4. 支持高效range query，由于disk write是顺序的，可支持很高的写吞吐
 
