@@ -109,7 +109,7 @@ level：一般3、4层就够
 
 ### Making B-trees reliable(p82)
 1. 现象：B-tree的update操作是直接disk原地更改，包括insert时候可能触发的page split
-2. crash recovery: a write-ahead log
+2. crash recovery: a write-ahead log（WAL）
 3. concurrency control: latches (一种轻量级锁)
 
 ### optimization (p82-p83)
