@@ -109,13 +109,14 @@ level：一般3、4层就够
 
 ### Making B-trees reliable(p82)
 1. 现象：B-tree的update操作是直接disk原地更改，包括insert时候可能触发的page split
-2. crash recovery: a write-ahead log（WAL）
+2. crash recovery: a write-ahead log（WAL），就是在实际执行write操作前，先把操作写到append-only日志中，以待crash的时候用来恢复
 3. concurrency control: latches (一种轻量级锁)
 
-### optimization (p82-p83)
-1. copy-on-write: write的时候copy换一个location写入，parent page用版本管理，新版本reference指向新的location。 版本管理也可以用来做concurrent control
-2. key abbr for saving space. no specific info
-3. B+tree: pointer to siblings page from left to right in leaf level
+### Optimization (p82-p83)
+1. copy-on-write: write page的时候copy page到一个新的location再write，parent page用版本管理，新版本reference指向新的location。 版本管理也可以用来做concurrent control，详见P237
+2. abbreviating key: 缩写key，仅保证range scan的功能即可。这样可以增加page的branch factor
+3. B+tree
+>pointer to siblings page from left to right in leaf level, which allows scanning keys in order without jumping back to parent pages
 
 
 ## Compare B-Trees and LSM_Trees
