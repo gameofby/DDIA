@@ -1,5 +1,5 @@
-# 3.1 Data structure that power your database
-## 3.1.1 Hash indexes
+# 3.1 Data structures that power your database
+## 3.1.1 Hash Indexes
 
 **基本结构(p72-p75)：**
 
@@ -35,8 +35,8 @@
 
 **为什么使用append-only而不是update的方式存储？(p75)**
 
-1. 顺序写入比随机写快，尤其在HDD上。  即使SSD顺序写叶更快，原因见：page83
-2. crash恢复更方便。 如果是
+1. 顺序写入比随机写快，尤其在HDD上。  即使SSD顺序写也更快，原因见：page83
+2. crash recovery和concurrency更简单
 3. compaction避免了文件碎片化
 
 **hash table index的局限(p75)：**
@@ -49,7 +49,7 @@
 ## 3.1.2 SSTables（Sorted string table） and LSM-Trees
 
 ### 基本结构(p76)
-在hash index disk segment基础上，要求segment内按照key排序
+在hash index的segment基础上，要求segment内按照key排序
 
 ### 优势（p76-p77）
 1. compaction: 归并排序即可。同key但value不同的，丢弃更早的value
