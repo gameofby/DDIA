@@ -1,1 +1,3 @@
-1. page78: red-black tree?
+
+ - [ ] review chapter3
+ - [ ] red-black tree, balanced tree detail

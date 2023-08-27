@@ -1,5 +1,5 @@
-# 3.1 Data structures that power your database
-## 3.1.1 Hash Indexes
+# Data structures that power your database
+## Hash Indexes
 
 **基本结构(p72-p75)：**
 
@@ -9,6 +9,9 @@
 >Bitcask (the default storage engine in Riak). 
 >well suited to situations where the value for each key is updated frequently
 
+![[Pasted image 20230827201508.png]]
+
+![[Pasted image 20230827195927.png]]
 
 如何避免append file超过了disk space?
 使用segment + compaction
@@ -46,7 +49,7 @@
 
 
 
-## 3.1.2 SSTables（Sorted string table） and LSM-Trees
+## SSTables（Sorted string table） and LSM-Trees
 
 ### 基本结构(p76)
 在hash index的segment基础上，要求segment内按照key排序。以及，merged segment中，一个key只能出现一次（compaction保证了这一点）
@@ -58,24 +61,28 @@
 4. 支持高效range query，由于disk write是顺序的，可支持很高的写吞吐
 
 ### 如何构建sorted index？
-1. 数据结构：内存中维护一个平衡树（如红黑树），有序。 一般叫做**memtable**
-2. spill：内存树到一定阈值，spill到磁盘segment
+1. 数据结构：内存中维护一个平衡树（如红黑树, AVL tree），有序。 一般叫做**memtable**
+2. spill：红黑树到一定阈值，`typically a few megabytes`，spill到磁盘SSTable segment。这里和上一节的hash index不太一样，index和SSTable是分离的，index
 3. read：优先查内存。查不到的查磁盘segment，由近及早
 4. compaction：定期后台合并，丢弃update的value、删除的key
 
 ### 劣势
-crash recovery，内存直接丢了。 解法：write-ahead， write之前，先打印log（类似binlog），crash后从log恢复
+crash recovery，内存直接丢了。 解法：write-ahead， write之前，先打印log（类似binlog），crash后从log恢复。  如果log对应的write已经落盘为SSTable，对应的log就可以删除了
 
 ### LSM-Tree历史沿革(p78-p79):
-1. 上述算法，Patrick O’Neil等人先使用Log-Structured Merge-Tree（LSM-Tree）来描述；
-2. **SSTable**和**memtable** 名次来自于Google Bigtable的论文；
-3. LevelDB，RocksDB使用的KV引擎收到Bigtable启发；
-4. Elasticsearch 和Solr 中的Lucene引擎，也使用了类似的idea，来构建key(item) -> value(document id list) index
+上述算法，Patrick O’Neil等人先使用Log-Structured Merge-Tree（LSM-Tree）来描述；
+
+**SSTable**和**memtable** 名次来自于Google Bigtable的论文；
+
+LevelDB，RocksDB使用的KV引擎受到到Bigtable启发；
+
+ElasticSearch 和Solr 中的Lucene引擎，也使用了类似的idea，来构建key(item) -> value(document id list) index（倒排索引）
 
 ### 性能优化
-1. 查询不到的key：引入bloom filter
+查询不到的key：引入bloom filter
    >It can tell you if a key does not appear in the database
-2. compaction的顺序和时机
+
+compaction的顺序和时机
    1. size-tiered（HBase）： 新的小的segment合入到旧的大的
    2. leveled（LevelDB and RocksDB）：（寥寥几句话，没太看懂...） TODO：可以详细研究
    Cassandra两种都支持
@@ -85,16 +92,22 @@ crash recovery，内存直接丢了。 解法：write-ahead， write之前，先
 ## B-Trees
 
 ### structure(p80-p81)
-1. block/page: 对应图中一个树的每一个节点。size是固定的，类似disk底层的管理方式。  不像log-structure index, 是可变大小。 每个page中可容纳的reference数量，叫做 _branching factor_，一般大小是几百
-2. 存储在disk上，而不是内存
-3. update: 从root开始，顺着树查询
-4. insert: 查询，然后在合适的位置插入。  如果当前page超出 _branching factor_，需要分裂为两个page，更新父亲节点。  有可能递归向上传播。 这样可以保证树的平衡，可以在O(logn)查询效率
-5. level：一般3、4层就够
-   >A four-level tree of 4 KB pages with a branching factor of 500 can store up to 256 TB
-   
 ![](/images/b-tree_structure.png)
 
-### reliability(p82)
+block/page: 对应图中一个树的每一个节点。size是固定的，类似disk底层的管理方式。  不像log-structure index, 是可变大小。 reference代表了子树的数据范围。每个page中可容纳的reference数量，叫做 _branching factor_，一般大小是几百
+
+存储在disk上，而不是内存
+
+update: 从root开始，顺着树查询
+
+insert: 查询，然后在合适的位置插入。  如果当前page超出 _branching factor_，需要分裂为两个page，更新父亲节点。  有可能递归向上传播。 这样可以保证树的平衡，可以在O(logn)查询效率
+
+level：一般3、4层就够
+   >A four-level tree of 4 KB pages with a branching factor of 500 can store up to 256 TB
+   
+
+
+### Making B-trees reliable(p82)
 1. 现象：B-tree的update操作是直接disk原地更改，包括insert时候可能触发的page split
 2. crash recovery: a write-ahead log
 3. concurrency control: latches (一种轻量级锁)
