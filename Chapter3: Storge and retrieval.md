@@ -210,13 +210,18 @@ bad
 ![](/images/column-compression.png)
 
 **memory bandwidth and vectorized processing**
-这块书中描述比较简略，可以参考书中引用深入
+这块书中描述比较简略，可以参考书中给的引用资料深入
 
 ### Sort Order in Column Storage
-1. column元素如果要重排序（即在原本append插入顺序的基础上，重排序），需要同一行一起排，否则将找不到属于同一行的column
-2. DBA可以参照日常query分布来决定按照哪个column来排序(如date)。也可以分一级、二级sort key，是级联的
-3. 优点：加速查询（前缀索引的效果）；排序的列更容易压缩，因为相同的值连续排列
-4. 多种排序共存：可以在分布式replication存储上，使用不同的排序方式。然后在查询的时候，挑选最适合当前query的排序。 和row-oriented不同的地方在于，column-orinted实实在在存了多次，而row-oriented可以只存不同的索引，原始数据只有一份
+column元素如果要重排序（即在原本append插入顺序的基础上，重排序），需要同row的其他column一起排，否则将找不到属于同row的其他column
+
+DBA可以参照日常query分布来决定按照哪个column来排序(如date)。也可以分一级、二级sort key，是级联的
+
+优点
+1. 加速查询（前缀索引的效果）；
+2. 排序的列更容易压缩。因为相同的值连续排列
+
+多种排序共存：可以在分布式replication存储上，使用不同的排序方式。然后在查询的时候，挑选最适合当前query的排序。 和row-oriented不同的地方在于，column-orinted实实在在存了多份原始数据，而row-oriented可以只存不同的索引，原始数据只有一份
 
 ### Writing to Column-Oriented Storage
 
