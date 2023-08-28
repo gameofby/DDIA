@@ -157,10 +157,11 @@ bad
 
 ### Multi-column indexes（多列索引）
 1. `concatenated index` 就是把多个key拼起来而已（类似doris的前缀索引），只能按照拼的顺序做前缀筛选，不能单独筛选非一级索引
-2. Multi-dimensional index：支持多列同时，不同条件的筛选，真正意义上的多列索引。 一般可以用R-tree实现
+2. `Multi-dimensional index`：支持多列**同时**筛选，而不是各自筛选再求交集（B-tree等可以这么实现）。 一般可以用R-tree实现。实际应用：
+> PostGIS implements geospatial indexes as R-trees using PostgreSQL’s Generalized Search Tree indexing facility
 
 ### Full-text search and fuzzy indexes
-常用于搜索引擎，支持纠错（一定的编辑距离）、同义词等，属于信息检索的范畴。  一般用到 _trie_ 等数据结构
+常用于搜索引擎，支持纠错（一定的编辑距离）、同义词等，属于信息检索的范畴。  一般用到 `trie` 等数据结构
 
 
 
