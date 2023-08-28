@@ -180,7 +180,7 @@ bad
 # Column-Oriented Storage
 
 1. 列存：想法很简单，就是把每一列的相近数据存在一起，列间拆分。而不是把相近的行存在一起。
-2. 试用场景：analytics/olap, 查询中scan的列较少，但是scan大量的row。 如果行存，会导致要scan几乎所有的数据进内存
+2. 试用场景：analytics/olap, 查询中scan的列较少（4～5，很少select \*），但是scan大量的row。 如果行存，会导致要scan几乎所有的数据进内存
 
 ![](/images/relational2column.png)
 
