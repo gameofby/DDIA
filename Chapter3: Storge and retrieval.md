@@ -62,7 +62,7 @@
 
 ### 如何构建sorted index？
 1. 数据结构：内存中维护一个平衡树（如红黑树, AVL tree），有序。 一般叫做**memtable**
-2. spill：红黑树到一定阈值，`typically a few megabytes`，spill到磁盘SSTable segment。这里和上一节的hash index不太一样，index和SSTable是分离的，index
+2. spill：红黑树到一定阈值，`typically a few megabytes`，spill到磁盘SSTable segment。这里和上一节的hash index不太一样，index和SSTable是分离的
 3. read：优先查内存。查不到的查磁盘segment，由近及早
 4. compaction：定期后台合并，丢弃update的value、删除的key
 
