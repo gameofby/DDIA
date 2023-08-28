@@ -166,19 +166,21 @@ bad
 
 
 ### Keeping everything in memory
-1. 完全使用内存，然后使用snapshot，分布式，带电池的RAM，NVM（断电后仍可保存数据的内存新型硬件）等方式提供reliability
-2. 反直觉地，in-memory database快并不是因为不用从disk读。  内存足够大的话，OS会把最近用的cache到memory。 主要的“快”来自于不用把内存里的数据合适方式编码后存储到disk。  因此，in-memory还有一个优点，是可以提供更复杂的数据结构（如redis）
-3. 另外，即便使用类似OS的方式，把很久没用到的spill到disk，再把最近用到的加载到内存。  但是相比OS是以page的粒度，in-memory db可以以record的粒度来做，粒度更精细
+完全使用内存，然后使用snapshot，分布式，带电池的RAM，NVM（断电后仍可保存数据的内存新型硬件）等方式提供reliability
+
+反直觉地，in-memory database快并不是因为不用从disk读。  一般内存足够大的话，OS也会把最近用的cache到memory。 主要的“快”来自于不用把内存里的数据合适方式编码后存储到disk。  因此，in-memory还有一个优点，是可以提供更复杂的数据结构（如redis）
+
+另外，即便使用类似OS的方式，把很久没用到的spill到disk，再把最近用到的加载到内存。  但是相比OS是以page的粒度，in-memory db可以以record的粒度来做，粒度更精细
 
 
 # Transaction Processing or Analytics?
 这节没讲的内容都太熟了，没啥可以记的，就放个比较olap和oltp的图吧
 ![](/images/diff-olap-oltp.png)
 
-## Column-Oriented Storage
+# Column-Oriented Storage
 
 1. 列存：想法很简单，就是把每一列的相近数据存在一起，列间拆分。而不是把相近的行存在一起。
-2. 试用场景：analytics/olap, 查询中scan的列较少，但是scan大量的row。 如果行存，会导致药scan几乎所有的数据进内存
+2. 试用场景：analytics/olap, 查询中scan的列较少，但是scan大量的row。 如果行存，会导致要scan几乎所有的数据进内存
 
 ![](/images/relational2column.png)
 
