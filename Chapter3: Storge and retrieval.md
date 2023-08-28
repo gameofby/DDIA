@@ -136,16 +136,27 @@ LSM-tree中，同一个key可能存在于多个segment中；B-tree相反，都�
 
 ## Other Indexing Structures
 
-### 在index中存储value？
-clustered index (storing all row data within the index)
-- 比如inno db，primary index和row data是存在一起的，secondary index指向primary index
-需要处理index和数据、多个index之间的一致性问题；duplicate导致额外的存储消耗；write需要写多个地方
+### Storing values within the index？
+
+`heap file`: 实际存储value的地方。index中，value存的是heap file的ref。 这种一般叫`nonclustered index`
+
+`clustered index` 
+>storing all row data within the index
+
+比如inno db，primary index和row data是存在一起的，secondary index指向primary index
+
+good
+>speed up reads
+
+bad
+1. 需要处理index和数据、多个index之间的一致性问题；
+2. duplicate导致额外的存储消耗；
+3. write需要写多个地方
 
 
-nonclustered index (storing only references to the data within the index)：read有性能损失
 
-### 多列索引
-1. concatenated index：就是把多个key拼起来而已（类似doris的前缀索引），只能按照拼的顺序做前缀筛选，不能单独筛选非一级索引
+### Multi-column indexes（多列索引）
+1. `concatenated index` 就是把多个key拼起来而已（类似doris的前缀索引），只能按照拼的顺序做前缀筛选，不能单独筛选非一级索引
 2. Multi-dimensional index：支持多列同时，不同条件的筛选，真正意义上的多列索引。 一般可以用R-tree实现
 
 ### Full-text search and fuzzy indexes
