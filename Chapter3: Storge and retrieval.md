@@ -213,21 +213,21 @@ bad
 这块书中描述比较简略，可以参考书中给的引用资料深入
 
 ### Sort Order in Column Storage
-column元素如果要重排序（即在原本append插入顺序的基础上，重排序），需要同row的其他column一起排，否则将找不到属于同row的其他column
+column如果要重排序（即在原本append插入顺序的基础上，重排序），需要同row的其他column一起排，否则将找不到属于同row的其他column
 
-DBA可以参照日常query分布来决定按照哪个column来排序(如date)。也可以分一级、二级sort key，是级联的
+DBA可以参照日常query分布来决定按照哪个column来排序(如date)。也可以分一级、二级sort key
 
 优点
 1. 加速查询（前缀索引的效果）；
 2. 排序的列更容易压缩。因为相同的值连续排列
 
-多种排序共存：可以在分布式replication存储上，使用不同的排序方式。然后在查询的时候，挑选最适合当前query的排序。 和row-oriented不同的地方在于，column-orinted实实在在存了多份原始数据，而row-oriented可以只存不同的索引，原始数据只有一份
+多种排序共存：可以在分布式replication存储上，使用不同的排序方式。然后在查询的时候，挑选最适合当前query的排序。 和row-oriented不同的地方在于，column-orinted实实在在存了多份原始数据（replication）。而row-oriented可以只存不同的索引，原始数据只有一份
 
 ### Writing to Column-Oriented Storage
 
-基于以上对column-oriented的描述，怎么write?
+基于以上对column-oriented的描述，虽然对read很有利，但是write就复杂了?
 
-1. 类似LSM-tree，先在内存里积累，然后和disk上的数据merge，保持disk上的列存、有序
+1. 类似LSM-tree，先在内存里积累，然后和disk上的数据merge，保持数据在disk是列存的、有序的
 2. 查询需要结合memory和disk上的数据
 
 ### Aggregation: Data Cubes and Materialized Views
