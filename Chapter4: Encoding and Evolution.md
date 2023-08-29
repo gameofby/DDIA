@@ -84,7 +84,9 @@ Protocol buffer
 ### Datatypes and schema evolution
 更改数据类型：有截断风险。 如int32改为int64，向后兼容会截断
 
-更改optional/repeated/required等属性：pb中list表达为repeated。  提供了一种可能性，可以将optional改为repeated。 向后兼容，会读到list最后一个元素，多余的视为0；向前兼容，list的元素数量为0或1。  Thrift有专门的list类型，所以没法这么改
+更改optional/repeated/required等属性
+- pb: 中list表达为repeated。  提供了一种可能性，可以将optional改为repeated。 向后兼容，会读到list最后一个元素，多余的视为0；向前兼容，list的元素数量为0或1
+- thrift: 有专门的list类型，所以没法这么改
 
 ## Avro
 由于Thrift不适用于Hadoop的使用场景，Avro作为Hadoop的子项目在2009年开始研发
