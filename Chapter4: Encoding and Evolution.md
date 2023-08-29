@@ -74,14 +74,17 @@ Protocol buffer
 ![](/images/protocolbuffer.png)
 
 ### Field tags and schema evolution
-1. 新增字段：如果是required，new code读取old data会fail。所以为了向后兼容，新增的字段只能是optional, 或者包含default value
-2. 删除field
+新增字段
+如果是required，new code读取old data会fail。所以为了向后兼容，新增的字段只能是optional, 或者包含default value
+
+删除field
    - 只能删optional。 如果删除了required, 老代码读新数据会报错
    - 删除的tag number不能再次用于其他field。  否则新代码读老数据会出错
 
 ### Datatypes and schema evolution
-3. 更改数据类型：有截断风险。 如int32改为int64，向后兼容会截断
-4. 更改optional/repeated/required等属性：pb中list表达为repeated。  提供了一种可能性，可以将optional改为repeated。 向后兼容，会读到list最后一个元素，多余的视为0；向前兼容，list的元素数量为0或1。  Thrift有专门的list类型，所以没法这么改
+更改数据类型：有截断风险。 如int32改为int64，向后兼容会截断
+
+更改optional/repeated/required等属性：pb中list表达为repeated。  提供了一种可能性，可以将optional改为repeated。 向后兼容，会读到list最后一个元素，多余的视为0；向前兼容，list的元素数量为0或1。  Thrift有专门的list类型，所以没法这么改
 
 ## Avro
 由于Thrift不适用于Hadoop的使用场景，Avro作为Hadoop的子项目在2009年开始研发
