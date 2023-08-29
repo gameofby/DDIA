@@ -225,13 +225,19 @@ DBA可以参照日常query分布来决定按照哪个column来排序(如date)。
 
 ### Writing to Column-Oriented Storage
 
-基于以上对column-oriented的描述，虽然对read很有利，但是write就复杂了?
+基于以上对column-oriented的描述，虽然对read很有利，但是write就复杂了
 
-1. 类似LSM-tree，先在内存里积累，然后和disk上的数据merge，保持数据在disk是列存的、有序的
-2. 查询需要结合memory和disk上的数据
+1. 类似LSM-tree，先在内存里积累，内存里是一个sorted的数据结构
+2. 然后和disk上的数据merge，保持数据在disk是列存的、有序的
+3. 查询需要结合memory和disk上的数据
+
+>This is essentially what Vertica does
 
 ### Aggregation: Data Cubes and Materialized Views
-1. 物化视图：轻度聚合，单独存储。 不想OLTP db里的视图，只是一层虚拟视图，查询视图的sql会转为查询table的sql，做不到加速查询，只是抽象对外的接口
-2. 优势：加速SUM等特定的聚合查询
-3. 劣势：写成本较大（但是对于“重读”的数仓，用空间来换时间还是划算的）；对应需要从最细粒度原始数据的查询无能为力，比如查询分位值等
+物化视图：轻度聚合，单独存储。 不像OLTP db里的视图，只是一层虚拟视图，查询视图的sql会转为查询table的sql，做不到加速查询，只是抽象对外的接口
+
+Doris就有这个feature
+
+1. 优势：加速SUM等特定的聚合查询
+2. 劣势：写成本较大（但是对于“重读”的数仓，用空间来换时间还是划算的）；对应需要从最细粒度原始数据的查询无能为力，比如查询分位值等
 
