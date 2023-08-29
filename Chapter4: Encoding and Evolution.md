@@ -43,10 +43,12 @@ JSON里无法区分integer和float，并且没有精度保证，例如：twitter
 
 
 ## Binary Encoding
-即直接对JSON等进行二进制编码，还是依附于JSON存在的
+初期诞生了很多基于JSON, XML进行改造，增加支持二进制编码。
+> MessagePack, BSON, BJSON, UBJSON, BISON. 
+> WBXML and Fast Infoset, for example.
 
 劣势
-1. 因为没有单独的schema，json需要把所有的field name(key)存储在数据里。本身是一种空间浪费。以MessagePack为例，实际存下来没比textual JSON短多少（81 bytes -> 66 bytes），还损失了可读性。  不太划算
+1. 因为没有单独的schema定义字段集合，json需要把所有的field name(key)存储在数据里。本身是一种空间浪费。以MessagePack为例，实际存下来没比textual JSON短多少（81 bytes -> 66 bytes），还损失了可读性。  不太划算
    ![](/images/MessagePack.png)
 
 ## Thrift and Protocol Buffers
@@ -56,13 +58,13 @@ JSON里无法区分integer和float，并且没有精度保证，例如：twitter
 2. with a code generation tool for kinds of languages
 
 Thrift第一种编码：BinaryProtocol
-1. type annotation: to indicate whether it is astring, integer, list, etc.
-2. length indication: length of a string, number of items in a list
-3. field tags: 对应schema里的编号。  节省很多空间。 和JSON Binary Encoding一个最大不同
+- type annotation: to indicate whether it is a string, integer, list, etc.
+- length indication: length of a string, number of items in a list
+- field tags: 对应schema里的编号。  节省很多空间。 和JSON Binary Encoding一个最大不同
 ![](/images/thrift-binaryprotocol.png)
 
-Thrift第一种编码：CompactProtocol
-CompactProtocol和BinaryProtocol语义上一致。  但是前者encoding同样数据只用了34 bytes。 原因：
+Thrift第二种编码：CompactProtocol
+CompactProtocol和BinaryProtocol语义上一致。  但是CompactProtocol encoding同样数据只用了34 bytes, 比BinaryProtocol（59 bytes）少了25bytes。 原因：
 1. type annotation、field tag塞到了一个byte
 2. 使用变长整型（整型不在固定占用8个字节，而是按照大小范围变长）存储Integer，length indication等
 ![](/images/thrift-compactprotocol.png)
