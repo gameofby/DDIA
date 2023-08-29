@@ -2,8 +2,8 @@
 2. 向后兼容：老代码可以读新代码生成的新数据。或者对于service间调用，是老client向新server request数据
 
 为什么需要向前向后兼容？
-1. 大型后端应用一般都有灰度发布的需求
-2. 客户端应用，用户不一定能及时更新，长期内可能新老版本共存
+1. 大型后端应用一般都有灰度发布的需求，线上会同时存在新老版本的server
+2. 客户端应用（比如ios app），用户不一定能及时更新，长期内可能新老版本共存
 
 # Formats for Encoding Data
 
@@ -18,9 +18,10 @@
 劣势
 1. 和语言绑定太深，难以与其他语言、其他系统交互
 2. 反序列化进程需要具备能实例化任意class的能力。  有安全隐患
+> if an attacker can get your application to decode an arbitrary byte sequence, they can instantiate arbitrary classes, which in turn often allows them to do terrible things such as remotely executing arbitrary code
 3. 几乎没有版本管理，向前向后兼容的能力
 4. 编解码性能差
-   >For example, Java’s built-in serialization is notorious for its bad performance and bloated encoding
+   >For example, Java’s built-in serialization is notorious(臭名昭著的) for its bad performance and bloated encoding
 
 
 ## JSON, XML, and Binary Variants
