@@ -89,7 +89,7 @@ Protocol buffer
 - thrift: 有专门的list类型，所以没法这么改
 
 ## Avro
-由于Thrift不适用于Hadoop的使用场景，Avro作为Hadoop的子项目在2009年开始研发
+由于Thrift不适用于Hadoop的使用场景（原因没细说，给了ref \[21\]），Avro作为Hadoop的子项目在2009年开始研发
 
 two schema languages
 1. Avro IDL: intended for human editing
@@ -100,7 +100,7 @@ two schema languages
         array<string> interests;
     }
    ```
-2. based onJSON: more easily machine-readable
+2. based on JSON: more easily machine-readable
    ```json
     {
         "type": "record",
@@ -114,8 +114,8 @@ two schema languages
    ```
 
 Avro和Thrift/Pb的异同
-1. 不同：没有tag number for field；没有data type
-2. 相同：也用了变长整型
+- 不同：没有tag number for field；没有data type。  （那怎么知道数据存的是啥呢？ 下一节有解释）
+- 相同：也用了变长整型
 
 ![](/images/avro.png)
 
@@ -127,9 +127,11 @@ read的时候，用write schema解析，然后对比两个schema的field name，
 ![](/images/avro-reader2writer-schema.png)
 
 ### Schema evolution rules
-1. >To maintain compatibility, you may only add or remove a field that has a default value.
-2. change field datatype: provided that Avro can convert the type
-3. change field name：可以用alias，老的名字还是得在，用于匹配。  只能向后兼容
+>To maintain compatibility, you may only add or remove a field that has a default value.
+
+change field datatype: provided that Avro can convert the type
+
+change field name：可以用alias，老的名字还是得在，用于匹配。  只能向后兼容
 
 ### But what is the writer’s schema?
 reader是怎么拿到writer的schema的？看情况
