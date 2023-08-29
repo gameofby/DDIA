@@ -27,10 +27,17 @@
 ## JSON, XML, and Binary Variants
 
 JSON、XML等存在的问题：
-1. 数据类型问题、精度问题:
-   - 如XML里无法区分string和number； 
-   - JSON里无法区分integer和float，并且没有精度保证，例如：twitter用2^64数字表示twitter id。 由于JavaScript内部使用floating-point来表达数字， 后端两次返回同一个id，一次用的json number，一次用的decimal string，用于解决改问题
-    >integers greater than 2^53 cannot be exactly represented in an IEEE 754 double-precision floating point number
+1. 数据类型问题、精度问题。如XML, CSV里无法区分string和number
+```xml
+<data>
+    <number>42</number>
+    <string>Hello, XML!</string>
+</data>
+```
+
+JSON里无法区分integer和float，并且没有精度保证，例如：twitter用2^64数字表示twitter id。 由于JavaScript内部使用floating-point来表达数字， 后端两次返回同一个id，一次用的json number，一次用的decimal string，用于解决该问题
+> integers greater than 2^53 cannot be exactly represented in an IEEE 754 double-precision floating point number
+
 2. 不支持binary string（类似pb、thrift），只支持Unicode character strings
 3. 虽然XML和JSON都有schema支持，但是使用的不多，多是在代码中hardcode编解码逻辑
 
