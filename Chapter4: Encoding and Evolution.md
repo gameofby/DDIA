@@ -155,11 +155,11 @@ reader(old schema) A
 ```
 
 ### But what is the writer’s schema?
-某一坨来自writer的数据，reader怎么知道它对应的schema是啥？因为可能有多个数据，对应多个schema
+某一坨来自writer的数据，reader怎么知道它对应的schema是啥？因为可能有多个数据，对应多个schema。   针对不同的场景，有不同的解法：
 
 1. Large file with lots of records: include the writer’s schema once at the beginning of the file
 2. Database with individually written records: 使用专门的database存储schema，维护版本。encoding file里带上version number
-3. Sending records over a network connection: 在网络连接建立的时候，传输schema version number，然后在整个connection过程中使用改schema
+3. Sending records over a network connection: 在网络连接建立的时候，传输schema version number，然后在整个connection过程中使用该schema。 这种得每次connection传输的数据够多才有意义
 
 ### Dynamically generated schemas
 
@@ -167,9 +167,8 @@ reader(old schema) A
 
 ### Code generation and dynamically typed languages
 
-
 1. 动态语言没有编译环节。生成的代码不经过编译的校验，有风险
-2. Avro也为静态语言提供了code generation。基于使用场景，Avro可以从自描述（self-describing）的源文件中直接读取metadata(schema)，不一定用得到code generation
+2. Avro也为静态语言提供了code generation。基于使用场景，Avro可以从自描述（self-describing）的源文件中直接读取metadata(schema)，不一定用得到code generation。比如上面“But what is the writer’s schema?” 提到得第一种场景，schema携带在大块数据头部
 
 ## The Merits of Schemas
 binary encoding based on schema相比于JSON、XML等的优势
