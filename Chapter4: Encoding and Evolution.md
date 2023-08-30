@@ -155,7 +155,7 @@ reader(old schema) A
 ```
 
 ### But what is the writer’s schema?
-reader是怎么拿到writer的schema的？看情况
+某一坨来自writer的数据，reader怎么知道它对应的schema是啥？因为可能有多个数据，对应多个schema
 
 1. Large file with lots of records: include the writer’s schema once at the beginning of the file
 2. Database with individually written records: 使用专门的database存储schema，维护版本。encoding file里带上version number
