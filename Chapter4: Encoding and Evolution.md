@@ -132,14 +132,30 @@ read的时候，用write schema解析，然后对比两个schema的field name，
 - forward compatibility: a new version of the schema as writer and an old version of the schema as reader
 - backward compatibility:  a old version of the schema as writer and an new version of the schema as reader
 
->To maintain compatibility, you may only add or remove a field that has a default value.
+这里“前、后”，指的是前端、后端的角色
 
-这里的add, remove，都指的是writer
+>To maintain compatibility, you may only add or remove a field that has a default value.
 
 change field data type: Avro得能支持convert不同的data type
 > provided that Avro can convert the type
 
 change field name：可以用alias，老的名字还是得在，用于匹配。  只能向后兼容
+
+```
+old schema A 
+new schema B
+
+writer
+reader
+
+向后兼容:
+writer(old schema) A
+reader(new schema) B, A remains as alias name
+
+向前兼容:
+writer(new schema) B
+reader(old schema) A
+```
 
 ### But what is the writer’s schema?
 reader是怎么拿到writer的schema的？看情况
