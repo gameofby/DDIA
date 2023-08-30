@@ -127,9 +127,17 @@ read的时候，用write schema解析，然后对比两个schema的field name，
 ![](/images/avro-reader2writer-schema.png)
 
 ### Schema evolution rules
+
+在Avro的语境下，向前向后兼容的定义是：
+- forward compatibility: a new version of the schema as writer and an old version of the schema as reader
+- backward compatibility:  a old version of the schema as writer and an new version of the schema as reader
+
 >To maintain compatibility, you may only add or remove a field that has a default value.
 
-change field datatype: provided that Avro can convert the type
+这里的add, remove，都指的是writer
+
+change field data type: Avro得能支持convert不同的data type
+> provided that Avro can convert the type
 
 change field name：可以用alias，老的名字还是得在，用于匹配。  只能向后兼容
 
