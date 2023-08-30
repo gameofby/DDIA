@@ -145,15 +145,12 @@ change field name：可以用alias，老的名字还是得在，用于匹配。 
 old schema A 
 new schema B
 
-writer
-reader
-
 向后兼容:
 writer(old schema) A
 reader(new schema) B, A remains as alias name
 
 向前兼容:
-writer(new schema) B
+writer(new schema) B。 除非可以带两个key的名字
 reader(old schema) A
 ```
 
