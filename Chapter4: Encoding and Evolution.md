@@ -132,7 +132,11 @@ read的时候，用write schema解析，然后对比两个schema的field name，
 - forward compatibility: a new version of the schema as writer and an old version of the schema as reader
 - backward compatibility:  a old version of the schema as writer and an new version of the schema as reader
 
-这里“前、后”，指的是前端、后端的角色
+**这里“前、后”，指的是前端、后端的角色。被兼容的角色，从old version -> new version**
+```
+比如：向前兼容，schema变化的是writer，reader需要向“前”兼容变化的writer
+```
+
 
 >To maintain compatibility, you may only add or remove a field that has a default value.
 
@@ -183,16 +187,22 @@ binary encoding based on schema相比于JSON、XML等的优势
 
 
 1. Via databases
-2. Via service calls
-3. Via asynchronous message passing
+2. Via service calls(API)
+3. Via asynchronous message passing(MQ)
 
 ## Dataflow Through Databases
 
-preservation of unknown fields: 前面提到的encoding formats，支持向前兼容的情况下，old code虽然不识别new field，需要能在update时保证其完好无损。   encoding file通过old code反序列化为obejct，在重新encode到数据库，很容易丢掉new field
-！[](/images/preservation-unknow-field.png)
+>preservation of unknown fields. （描述的是老代码读取新数据，且新数据新增了字段的情况）
+
+期望：
+> In this situation, the desirable behavior is usually for the old code to keep the new field intact, even though it couldn’t be interpreted
+
+上几节提到的各种encoding formats是可以实现这种期望的。但是有一点要特别注意：避免在application内部的object转换中，丢掉new field，这个环节是不受database encoding formats控制的
+![](/images/preservation-unknow-field.png)
 
 ### Different values written at different times
 schema change（比如加字段）的时候，如果老数据完全改换新的schema，数据全刷一遍的成本太高。  因此都是DB底层做兼容。 例如read老数据的时候，对不存在的column赋予默认值
+（这里想起了公司内系统的各种重构，以及和数据仓库协同升级的方式）
 
 schema evolution使得schema展示唯一，但实际上底层的数据因时间而有差异。  DB做了中间的兼容
 
@@ -204,7 +214,7 @@ dump数据的各种场景（如snapshot、analytic warehouse等），即使源�
 比较了下REST和SOAP
 
 ### The problems with remote procedure calls (RPCs)
-RPC本身的定义想将网络请求封装成和本次函数调用一样丝滑。但实际上和本地函数调用还是有很多不一样的地方：书中列了6点。 因此，没有必要非得把remote service和本地function调用搞到一起，本质上就是两件事
+RPC本身的定义想将网络请求封装成和本地函数调用一样丝滑。但实际上和本地函数调用还是有很多不一样的地方：书中列了6点。 因此，没有必要非得把remote service和本地function调用搞到一起，本质上就是两件事
 
 ### Current directions for RPC
 1. gRPC: using Protocol Buffers
