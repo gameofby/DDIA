@@ -1,4 +1,4 @@
-本章笔墨着重于应对replication中的数据变更
+本章笔墨着重于阐述replication中发生数据变更后的解法
 
 # Leaders and Followers
 
@@ -10,18 +10,16 @@
 
 follower 1 is synchronous
 1. leader收到follower 1 的同步反馈
-2. leader反馈user  write success
+2. leader反馈user write success
 3. 其他clients对write可见
 
 synchronous的优劣
-1. 优势：一致性强保证
-2. 劣势：可能发生的write阻塞
+1. 优势：一致性强保证。要么都成功，要么都失败
+2. 劣势：可能由于某一个环节异常，发生的write阻塞
 
-应对synchronous劣势的方式1:
-1个follower synchronous，其他的都asynchronous,如果synchronous follower挂了，其他任一asynchronous follower补上
-
-应对synchronous劣势的方式2:
-虽然在durability上有折衷，纯异步还是拥有广泛的应用，尤其是follower特别多、地理分散分布的情况
+应对synchronous劣势的方式
+1. 1个follower synchronous，其他的都asynchronous。如果synchronous follower挂了，其他任一asynchronous follower补上
+2. 都asynchronous：虽然在durability上有折衷，纯异步还是拥有广泛的应用，尤其是follower特别多、地理分散分布的情况
 
 ## Setting Up New Followers
 
