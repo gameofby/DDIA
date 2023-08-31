@@ -175,9 +175,16 @@ binary encoding based on schema相比于JSON、XML等的优势
 1. 更紧凑，省空间
 2. schema是比document更好的一种方式。因为要实际用于解码，所以可以保持最新状态。如果是json，靠人工document的方式记录schema，很可能逐渐失控
 3. schema database的多版本管理，允许做向前向后是否兼容的check
-4. code generation for静态语言，可以在代码编译环节校正确性、兼容性等
+4. code generation for static language，可以在代码编译环节校正确性、兼容性等
 
 # Modes of Dataflow
+
+> In the rest of this chapter we will explore some of the most common ways how data flows between processes
+
+
+1. Via databases
+2. Via service calls
+3. Via asynchronous message passing
 
 ## Dataflow Through Databases
 
@@ -185,7 +192,7 @@ preservation of unknown fields: 前面提到的encoding formats，支持向前�
 ！[](/images/preservation-unknow-field.png)
 
 ### Different values written at different times
-schema change（比如加字短）的时候，如果老数据完全改换新的schema，数据全刷一遍的成本太高。  因此都是DB底层做兼容。 例如read老数据的时候，对不存在的column赋予默认值
+schema change（比如加字段）的时候，如果老数据完全改换新的schema，数据全刷一遍的成本太高。  因此都是DB底层做兼容。 例如read老数据的时候，对不存在的column赋予默认值
 
 schema evolution使得schema展示唯一，但实际上底层的数据因时间而有差异。  DB做了中间的兼容
 
