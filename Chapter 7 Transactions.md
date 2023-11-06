@@ -61,19 +61,22 @@ isolation有较大的performance损失，很多DB选择放弃一部分isolation�
 
 weak isolation造成bug不只是停留在理论上，实际中发生过造成重大金钱损失，或者招致金融审查
 
-即使一些流量的relational DB，实际也用的是weak isolation。未实现完全的ACID
+即使一些流行的relational DB，实际也用的是weak isolation。未实现完全的ACID
 
 所以，了解DB的weak isolation的细节，并在实践中结合场景选择，会更有必要。 这对开发者提出了更高的要求，而不只是完全依赖于DB
 
 ## Read Committed
 
-transaction isolation的最基础的level，就是 _read commited_ 。即
+transaction isolation的最基础的level，就是 _read commited_ 。即：
 - read到的都是committed的数据
 - write覆盖的也都是committed的数据
 ### No dirty reads
 
 - not committed data: 看到了transaction的部分数据
-- not roll-back data：看到了未回滚的数据
+- not roll-back data：看到了未回滚完成的数据
+
+### No dirty writes
+
 
 
 
