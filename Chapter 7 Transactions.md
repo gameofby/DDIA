@@ -76,6 +76,16 @@ transaction isolation的最基础的level，就是 _read commited_ 。即：
 - not roll-back data：看到了未回滚完成的数据
 
 ### No dirty writes
+write层面，通过加行锁的方式，保证write的顺序化（非并发）
+
+只能解决仅有write并发带来的问题。  如果两个transaction既有read，也有写。仍无法解决。比如如下7-1图的counter increment的场景
+![[Pasted image 20231106174918.png]]
+
+
+### Implementing read committed
+
+dirty write：行级别的写锁
+dirty read：使用同一个锁
 
 
 
