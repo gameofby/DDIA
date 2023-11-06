@@ -79,13 +79,18 @@ transaction isolation的最基础的level，就是 _read commited_ 。即：
 write层面，通过加行锁的方式，保证write的顺序化（非并发）
 
 只能解决仅有write并发带来的问题。  如果两个transaction既有read，也有写。仍无法解决。比如如下7-1图的counter increment的场景
-![[Pasted image 20231106174918.png]]
-
+![图](/images/Pasted%20image%2020230827195927.png)
 
 ### Implementing read committed
 
 dirty write：行级别的写锁
-dirty read：使用同一个锁
+
+dirty read
+- 使用同一个锁，有write的时候read就阻塞。  但是这种方式在write比较慢的情况下，read完全不可读，应用层无法接受
+- 冗余版本，write没有commited的时候read old value，commited后read new value。不阻塞读。Doris就这么干的
+
+## Snapshot Isolation and Repeatable Read
+
 
 
 
