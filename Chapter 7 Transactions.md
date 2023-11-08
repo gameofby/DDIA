@@ -107,6 +107,24 @@ _Snapshot isolation_ 是针对这类场景的最常用解法。可以看作一�
 > it is supported by PostgreSQL, MySQL with the InnoDB storage engine, Oracle, SQL Server, and others
 
 
+### Implementing snapshot isolation
+
+snapshot isolation也是使用write locks来避免dirty writes。但是这个lock只block其他write，不阻碍read，同样read也不阻碍write
+> a key principle of snapshot isolation is readers never block writers, and writers never block readers.
+
+read committed通过write lock，只实现了单个write的ACID。 snapshot isolation在此基础上，可以在read不阻碍的前提下，解决 _read skew_ 问题
+
+这种技术也被称为 _multiversion concurrency control (MVCC)_
+
+snapshot也可以用来实现read committed。不同之处在于，read committed的snapshot只包含单个write； 而snapshot isolation用于整个trasaction，可能包含一系列读写操作
+
+具体实现上，snapshot isolation会在每行数据上增加专门的字段用来记录transaction id，来区分version
+
+- `created_by` field，记录insert这条数据的transaction
+- `deleted_by` field，记录删除这条数据的transaction。暂时只是软删除，保留version。  等确认没有任何transaction access这条数据的时候，由单独的GC进程执行硬删除
+
+### Visibility rules for observing a consistent snapshot
+
 
 
 
