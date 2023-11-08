@@ -91,6 +91,22 @@ dirty read
 
 ## Snapshot Isolation and Repeatable Read
 
+read committed导致 _read skew_（aka _nonrepeatable read_） 现象
+
+![](Pasted%20image%2020231106191930.png)
+
+Account1/2都是Alice的账户，一共100块，她操作从Account2向Account1转账100快。        Alice读两个account是同时发起的（transaction），但是由于同时有两个write，虽然满足read committed，但是刚好Alice看到的两个账户结果加起来不等于100
+
+核心问题是，两个write虽然保证了顺序执行，但是没有成为一整个transaction
+
+这种暂时性的非一致性，在下面两种场景下更加不可接受：
+- 数据库backup。 执行时间长，不能backup既有新数据，也有旧数据。 这些新旧数据，预期是应该同时保持新的版本或者旧的版本
+- OLAP。大数据分析场景，query执行也比较慢，和backup类似
+
+_Snapshot isolation_ 是针对这类场景的最常用解法。可以看作一些所有transaction都committed的集合，一个snapshot中不存在未commited的trasaction的数据
+> it is supported by PostgreSQL, MySQL with the InnoDB storage engine, Oracle, SQL Server, and others
+
+
 
 
 
