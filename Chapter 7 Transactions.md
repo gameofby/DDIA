@@ -9,14 +9,14 @@
 
 在ACID中，consistency含义是，在应用层面有一些不变量，一定要保持其状态不变
 
-因为是应用层面的概念，所以需要在应用代码逻辑中保证。   如果应用里写入了打破invariant的数据 ，DB也无能为力
+因为是应用层面的概念，所以需要在应用代码逻辑中保证。   如果应用里写入DB打破invariant的数据 ，DB也无能为力
 > Thus, the letter C doesn’t really belong in ACID.
 ### Isolation
 并发场景（race condition）的概念。
 
 经典教材也会把isolation称为 _serializability_，即每个transaction都可以假定他们是唯一正在运行的transaction，不会被其他transaction影响
 
-实际应用中，极少有DB实现isolation，因为对DB性能影响很大
+实际应用中，极少有DB实现完全的isolation，因为对DB性能影响很大
 
 ### Durability
 含义：不丢数据
@@ -24,22 +24,22 @@
 - single node DB：保存到了disk or SSD（相对稳定的存储介质）。以及，存有write ahead log
 - replicated DB：`data has been successfully copied to some number of nodes`。transaction需要在replication完成后才commit
 
-不存在完美的durability。 比如极端情况下，所有的存储都挂了，切不可恢复
+不存在完美的durability。 比如极端情况下，所有的存储介质都挂了，且不可恢复
 
 ## Single-Object and Multi-Object Operations
 
 ### Single-obejct writes
 single object的操作也是需要atomicity和isolation的，否则会遇到以下情况
 - 较大的object write了一半网络断了
-- overwrite遇到了断电，覆盖一半？还是保留old object
-- 并发write read，write没执行完的时候，read是否能读到中间态的write新数据？
+- overwrite遇到了断电。覆盖一半，还是保留old object？
+- 并发场景，write没执行完的时候，read是否能读到中间态的write新数据？
 
 ### The need for multi-object transactions
 
 Do we need multi-object transactions at all? 只有single object的transaction保障够吗？或许一些简单的场景是ok的，但是以下例子表明了multi-obejct transaction的必要性
 
-- 关系型数据库里的外键
-- 图数据库里的点 - 边 - 点
+- foreign key in relational DB
+- verticle - edge - verticle in graph DB
 - 文档型数据库，因为缺乏join功能，促进了denormalization（In computing, denormalization is the process of attempting to optimize the read performance of a database by adding redundant data or by grouping data）的使用。有了denormalized data，原数据和denormalized data就必要一起更新
 - secondary index，需要和源数据、primary index一起更新
 
