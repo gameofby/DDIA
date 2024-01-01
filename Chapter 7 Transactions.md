@@ -59,15 +59,15 @@ Do we need multi-object transactions at all? 只有single object的transaction�
 
 isolation有较大的performance损失，很多DB选择放弃一部分isolation，换取performance
 
-weak isolation造成bug不只是停留在理论上，实际中发生过造成重大金钱损失，或者招致金融审查
+weak isolation会造成bug不只是停留在理论上。现实中发生过造成重大金钱损失，或者招致金融审查的案例
 
 即使一些流行的relational DB，实际也用的是weak isolation。未实现完全的ACID
 
-所以，了解DB的weak isolation的细节，并在实践中结合场景选择，会更有必要。 这对开发者提出了更高的要求，而不只是完全依赖于DB
+所以，了解DB的weak isolation的细节，并在实践中结合场景做选择，是很有必要的。 这对开发者提出了更高的要求，而不是完全依赖DB
 
 ## Read Committed
 
-transaction isolation的最基础的level，就是 _read commited_ 。即：
+ _read commited_ 是transaction isolation的最基础level。即：
 - read到的都是committed的数据
 - write覆盖的也都是committed的数据
 ### No dirty reads
@@ -78,8 +78,8 @@ transaction isolation的最基础的level，就是 _read commited_ 。即：
 ### No dirty writes
 write层面，通过加行锁的方式，保证write的顺序化（非并发）
 
-只能解决仅有write并发带来的问题。  如果两个transaction既有read，也有写。仍无法解决。比如如下7-1图的counter increment的场景
-![图](/images/Pasted%20image%2020230827195927.png)
+只能解决仅有write并发带来的问题。  如果两个transaction既有read，也有write，仍可能dirty reads。比如7-1图的counter increment的场景
+![[Pasted image 20240101190402.png]]
 
 ### Implementing read committed
 
@@ -87,7 +87,7 @@ dirty write：行级别的写锁
 
 dirty read
 - 使用同一个锁，有write的时候read就阻塞。  但是这种方式在write比较慢的情况下，read完全不可读，应用层无法接受
-- 冗余版本，write没有commited的时候read old value，commited后read new value。不阻塞读。Doris就这么干的
+- 冗余版本，write没有commited的时候read old version；commited后read new version。不阻塞读（Apache Doris就这么干的）
 
 ## Snapshot Isolation and Repeatable Read
 
@@ -95,15 +95,15 @@ read committed导致 _read skew_（aka _nonrepeatable read_） 现象
 
 ![](Pasted%20image%2020231106191930.png)
 
-Account1/2都是Alice的账户，一共100块，她操作从Account2向Account1转账100快。        Alice读两个account是同时发起的（transaction），但是由于同时有两个write，虽然满足read committed，但是刚好Alice看到的两个账户结果加起来不等于100
+Account1/2都是Alice的账户，一共1000元，她操作从Account2向Account1转账100元。        Alice读两个account是同时发起的（transaction），但是由于同时有两个write，虽然满足read committed，但是刚好Alice看到的两个账户结果加起来不等于100
 
 核心问题是，两个write虽然保证了顺序执行，但是没有成为一整个transaction
 
 这种暂时性的非一致性，在下面两种场景下更加不可接受：
-- 数据库backup。 执行时间长，不能backup既有新数据，也有旧数据。 这些新旧数据，预期是应该同时保持新的版本或者旧的版本
-- OLAP。大数据分析场景，query执行也比较慢，和backup类似
+- 数据库backup执行时间长，要backup很多数据。不能backup里既有new version，也有old version。 backup内，预期是同时保持new version，或者同时保持old version
+- OLAP。大数据分析场景，query执行复杂且慢，不能一部分读old version，一部分读到new version
 
-_Snapshot isolation_ 是针对这类场景的最常用解法。可以看作一些所有transaction都committed的集合，一个snapshot中不存在未commited的trasaction的数据
+_Snapshot isolation_ 是针对这类场景的最常用解法。可以看作一些transaction都committed的集合，一个snapshot中不存在未commited的trasaction的数据
 > it is supported by PostgreSQL, MySQL with the InnoDB storage engine, Oracle, SQL Server, and others
 
 
