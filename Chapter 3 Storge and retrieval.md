@@ -16,7 +16,7 @@
 如何避免append file超过了disk space?
 使用segment + compaction
 - segment：将log分割为certain size的segment，如果append已经达到了size，就close，创建一个新的segment来append
-- compaction：起一个background thread，对历史的segments做merge，只保留recent数据（杜宇key value，那就是最新的value； 如果是复杂的store，需要按照既定的规则计算，比如doris）
+- compaction：起一个background thread，对历史的segments做merge，只保留most recent的数据（对于key value，那就是最新的value； 如果是复杂的store，需要按照既定的规则计算，比如doris，每个aggregate column都有定义对应的aggregate function）
 
 详细步骤：
 1. read write请求，在**可用**的最新的segments上操作。同时起background thread做compaction
