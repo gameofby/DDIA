@@ -142,9 +142,10 @@ LSM-tree中，同一个key可能存在于多个segment中；B-tree相反，都�
 
 ### Storing values within the index？
 
-`heap file`: 实际存储value的地方。index中，value存的是heap file的ref。 这种一般叫`nonclustered index`
+nonclustered index
+value实际单独存储在heap file中，index中的value存的是heap file的ref
 
-`clustered index` 
+clustered index 
 >storing all row data within the index
 
 比如inno db，primary index和row data是存在一起的，secondary index指向primary index
