@@ -102,7 +102,7 @@ block/page: 对应图中一个树的每一个节点。size是固定的，类似d
 
 update: 从root开始，顺着树查询
 
-insert: 查询，然后在合适的位置插入。  如果当前page超出 _branching factor_，需要分裂为两个page，更新父亲节点。   这个分裂的操作，有可能递归向上传播。 这样可以保证树的平衡，保证O(logn)的查询效率
+insert: 查询，然后在合适的位置插入。  如果当前page超出 _branching factor_，需要分裂为两个page，更新父亲节点。   这个分裂的操作，有可能递归向父节点传播。 这样可以保证树的平衡，保证O(logn)的查询效率
 
 level：一般3、4层就够
    >A four-level tree of 4 KB pages with a branching factor of 500 can store up to 256 TB
