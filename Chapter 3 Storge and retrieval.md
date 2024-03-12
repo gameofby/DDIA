@@ -119,14 +119,14 @@ concurrency control: latches (一种轻量级锁)
 ### Optimization (p82-p83)
 1. copy-on-write: write page的时候copy page到一个新的location再write，write后更新parent page。parent page用版本管理，新版本reference指向新的location。 版本管理也可以用来做concurrent control，详见P237
 2. abbreviating key: 缩写key，仅保证range scan的功能即可。这样可以增加page的branch factor
-3. B+tree
+3. B+tree: 范围查询、顺序访问的效率更高，只用在叶子节点间移动
 >pointer to siblings page from left to right in leaf level, which allows scanning keys in order without jumping back to parent pages
 
 
 ## Compare B-Trees and LSM-Trees
 
 ### LSM-tree的优势
-1. lower write amplification: 因此而拥有更好的写吞吐能力
+1. lower write amplification: 因此拥有更好的 写吞吐 
    >the more that a storage engine writes to disk, the fewer writes per second it can handle within the available disk bandwidth.
 2. reduced fragmentation: 顺序写入，不像B-tree那么碎片化；更容易压缩；
 
