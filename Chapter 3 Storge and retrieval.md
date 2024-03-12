@@ -29,7 +29,7 @@
 
 其他实现细节
    - File format: binary format. bytes length of string + raw string
-   - delete: add a special record called tombstone, for deleting signal in compaction
+   - delete: add a special record called tombstone, for deleting signal in compaction, 惰性删除
    - crash recovery
 	   - slow: read all segments on disk to restore hashmap in memory
 	   - fast: store snapshot of hashmap. load it to memory when recovering
