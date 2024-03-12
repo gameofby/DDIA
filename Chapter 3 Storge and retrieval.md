@@ -19,7 +19,7 @@
 - compaction：起一个background thread，对历史的segments做merge，只保留most recent的数据（对于key value，保留最新的value； 如果是复杂的store，需要按照既定的规则计算，比如doris，每个aggregate column都有定义对应的aggregate function）
 
 详细步骤：
-1. read write请求，在**可用**的最新的segments上操作。同时起background thread做compaction
+1. read write请求，在**可用**的最新（最近compaction完的版本）的segments上操作。同时起background thread做compaction
 2. compaction不是in-place，而是开辟新的区域输出结果
 3. compaction结束后，`switch read requests to using the new merged segment`，然后old segments可以简单地删掉
 4. 内存中，每个segment有对应的hashmap
