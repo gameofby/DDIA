@@ -110,9 +110,11 @@ level：一般3、4层就够
 
 
 ### Making B-trees reliable(p82)
-1. 现象：B-tree的update操作是直接disk原地更改，包括insert时候可能触发的page split
-2. crash recovery: a write-ahead log（WAL），就是在实际执行write操作前，先把操作写到append-only日志中，以待crash的时候用来恢复
-3. concurrency control: latches (一种轻量级锁)
+现象：B-tree的update操作是直接disk原地更改，包括insert时候可能触发的page split
+
+crash recovery: a write-ahead log（WAL），就是在实际执行write操作前，先把操作写到append-only日志中，以待crash的时候用来恢复
+
+concurrency control: latches (一种轻量级锁)
 
 ### Optimization (p82-p83)
 1. copy-on-write: write page的时候copy page到一个新的location再write，parent page用版本管理，新版本reference指向新的location。 版本管理也可以用来做concurrent control，详见P237

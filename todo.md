@@ -10,4 +10,4 @@
 
 
 待之后了解
-- [ ] p232 exponential backoff，指数退避算法，避免overload导致重试指数增长，雪崩
+- [ ] chapter 3 B-Tree latches
