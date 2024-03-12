@@ -64,15 +64,17 @@
 1. 数据结构：内存中维护一个平衡树（如红黑树, AVL tree），有序。 一般叫做**memtable**
 2. spill：红黑树到一定阈值，`typically a few megabytes`，spill到磁盘SSTable segment。这里和上一节的hash index不太一样，index和SSTable是分离的
 3. read：优先查内存。查不到的查磁盘segment，由近及早
-4. compaction：定期后台合并，丢弃update的value、删除的key
+4. compaction：定期后台合并，丢弃较早的value、删除的key
 
 ### 劣势
-crash recovery，内存直接丢了。 解法：write-ahead， write之前，先打印log（类似binlog），crash后从log恢复。  如果log对应的write已经落盘为SSTable，对应的log就可以删除了
+crash recovery，内存直接丢了，因为内存这部分是尚未spill的segment，disk中的segment没有这部分数据
+
+解法：write-ahead， write之前，先打印log（类似binlog），crash后从log恢复。  如果log对应的write已经落盘为SSTable，对应的log就可以删除了
 
 ### LSM-Tree历史沿革(p78-p79):
 上述算法，Patrick O’Neil等人先使用Log-Structured Merge-Tree（LSM-Tree）来描述；
 
-**SSTable**和**memtable** 名次来自于Google Bigtable的论文；
+**SSTable**和**memtable** 的名字来自于Google Bigtable的论文；
 
 LevelDB，RocksDB使用的KV引擎受到到Bigtable启发；
 
