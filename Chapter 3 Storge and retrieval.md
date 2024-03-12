@@ -150,13 +150,13 @@ clustered index
 
 比如inno db，primary index和row data是存在一起的，secondary index指向primary index
 
-good
+clustered index  pros
 >speed up reads
 
-bad
-1. 需要处理index和数据、多个index之间的一致性问题；
-2. duplicate导致额外的存储消耗；
-3. write需要写多个地方
+clustered index  cons
+- 一致性：需要处理index和数据，多个index之间的一致性；
+- 多个index, value duplication导致额外的存储消耗；
+- write需要写多个index
 
 
 
