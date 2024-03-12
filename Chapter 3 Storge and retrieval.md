@@ -85,7 +85,7 @@ ElasticSearch 和Solr 中的Lucene引擎，也使用了类似的idea，来构建
    >It can tell you if a key does not appear in the database
 
 compaction的顺序和时机
-   1. size-tiered（HBase）： 新的、小的segment合入到旧的、大的
+   1. size-tiered（HBase）： "新的、小的segment合入到旧的、大的
    2. leveled（LevelDB and RocksDB）：（寥寥几句话，没太看懂...） TODO：可以详细研究
    Cassandra两种都支持
 
