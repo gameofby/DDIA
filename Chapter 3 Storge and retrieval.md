@@ -81,7 +81,7 @@ LevelDB，RocksDB使用的KV引擎受到到Bigtable启发；
 ElasticSearch 和Solr 中的Lucene引擎，也使用了类似的idea，来构建key(item) -> value(document id list) index（倒排索引）
 
 ### 性能优化
-bloom filter
+bloom filter: 
    >It can tell you if a key does not appear in the database
 
 compaction的顺序和时机
