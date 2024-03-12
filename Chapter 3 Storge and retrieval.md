@@ -31,8 +31,8 @@
    - File format: binary format. bytes length of string + raw string
    - delete: add a special record called tombstone, for deleting signal in compaction, 惰性删除
    - crash recovery
-	   - slow: read all segments on disk to restore hashmap in memory
-	   - fast: store snapshot of hashmap. load it to memory when recovering
+	   - slow: read all **segments** on disk to restore hashmap in memory
+	   - fast: store **snapshot of hashmap**. load it to memory when recovering
    - partially written records: use checksum to find it
    - concurrency control: only one writer thread running
 
