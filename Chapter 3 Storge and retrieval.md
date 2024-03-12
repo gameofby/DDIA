@@ -23,7 +23,7 @@
 2. compaction不是in-place，而是开辟新的区域输出结果
 3. compaction结束后，`switch read requests to using the new merged segment`，然后old segments可以简单地删掉
 4. 内存中，每个segment有对应的hashmap
-5. read write请求，会先在最新的hashmap中找，找不到就换第二新的，以此类推
+5. read write请求，会先在最新的hashmap中找，找不到就换次新的，以此类推
 6. 因为有compaction，hashmap(segment)的数量不会太多
 
 
