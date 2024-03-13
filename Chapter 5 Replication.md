@@ -1,4 +1,4 @@
-本章笔墨着重于阐述replication中发生数据变更后的解法
+本章笔墨着重于阐述replication中发生数据变更后，consistency如何保持
 
 # Leaders and Followers
 
