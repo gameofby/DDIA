@@ -212,7 +212,7 @@ clustered index  cons
 ```
 
 详细见图：
-将一列原始数据，重新编码为多行distinct bitmap. 每个bitmap代表列中一个唯一的数字，bitmap中的每一位代表一个row, 如果row
+将一列原始数据，重新编码为多行distinct bitmap. 每个bitmap代表列中一个唯一的数字，bitmap中的每一位代表一个row. 如果(row, column)的值和bitmap代表的distinct value相同, 则bitmapdui
 ![](/images/column-compression.png)
 
 **memory bandwidth and vectorized processing**
