@@ -76,7 +76,7 @@ Protocol buffer
 
 ### Field tags and schema evolution
 新增field
-如果是required，new code读取old data会fail。所以为了向后兼容，新增的字段只能是optional, 或者包含default value
+如果是required，new code读取old data会fail。所以为了向前兼容，新增的字段只能是optional, 或者包含default value
 
 删除field
    - 只能删optional。 如果删除了required, 老代码读新数据会报错
