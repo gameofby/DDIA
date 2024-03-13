@@ -51,7 +51,7 @@ follower挂掉恢复时，根据自己的log，定位最后一个已经处理的
 这一小节讨论leader和follower之间同步使用的具体log设计
 
 ### Statement-based replication
-最直观简单的一种方法。就是leader的每个wirte statement（比如每一条SQL）打log，然后把statement传输到follower一样执行。缺陷：
+最直观简单的一种方法。就是leader的每个write statement（比如每一条SQL）打log，然后把statement传输到follower一样执行。缺陷：
 - 非确定性函数，如NOW(), RAND()等，多个follower执行后会有diff
 - 自增列，需要每个replica按照和leader一样的顺序执行。  实现这点，会限制并发事务
 - 有副作用的函数，并且副作用不是确定性的。 如触发器、stored procedures, UDF等
@@ -124,7 +124,7 @@ possiable solutions：
 
 解法：`consistent prefix reads`
 
-听起来很好实现，wirte保持顺序，read按顺序读。  但实际上，尤其在partitioned(sharded)类型的DB中，无法保证**全局写的order**。  可以尝试把有因果性的write都写入到同一个partition，但实际实现起来，无法保证执行效率。   有一些算法可以进一步解决该问题，详见p186。
+听起来很好实现，write保持顺序，read按顺序读。  但实际上，尤其在partitioned(sharded)类型的DB中，无法保证**全局写的order**。  可以尝试把有因果性的write都写入到同一个partition，但实际实现起来，无法保证执行效率。   有一些算法可以进一步解决该问题，详见p186。
 
 ## Solutions for Replication Lag
 抽象总结一下：
@@ -285,7 +285,7 @@ reference \[48\] 有一些相关研究，但是仍不是常见的做法
 
 ## Sloppy Quorums and Hinted Handoff
 
-核心点是，集群真正的nodes数量大于n。 这样，当实际执行n、w、r的n个node的quorum被打破的时候，wirte仍可以在n之外的其他node上执行。  待n内的节点恢复后，再把数据移交回（hinted handoff）n个node
+核心点是，集群真正的nodes数量大于n。 这样，当实际执行n、w、r的n个node的quorum被打破的时候，write仍可以在n之外的其他node上执行。  待n内的节点恢复后，再把数据移交回（hinted handoff）n个node
 
 write不因为quorum打破而停滞，提升了集群的durability
 
