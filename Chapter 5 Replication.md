@@ -346,7 +346,7 @@ server可根据version number判断是否存在concurrent writes
 
 算法works as follows
 - server为每个key维护一个version number。每次write，server version number <= write version number的数据，被覆盖；其他的被保留。返回数据的version number++
-- A client must read a key before writing。并且，write和上一次read到的数据，要进行merge。再发送write request
+- A client must read a key before writing。并且，write之前要先和read到的数据做merge
 
 这样下来，write就不会丢（silently dropped）
 
@@ -365,16 +365,3 @@ Riak还创造了专门的数据结构(called CRDTs)，用来做 _Automatic Confl
 每个replica上的每个key，对应唯一的version number，单独increment
 
 > The collection of version numbers from all the replicas is called a version vector
-
-
-
-
-
-
-
-
-
-
-
-
-
