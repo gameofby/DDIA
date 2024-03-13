@@ -189,7 +189,7 @@ clustered index  cons
 
 ![](/images/relational2column.png)
 
-如图，列存中有一个关键点，每列中包含的行顺序要一致
+如图，列存中有一个关键点，列中对应的行顺序要一致
 
 ### Column Compression
 
