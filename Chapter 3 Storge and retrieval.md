@@ -175,7 +175,7 @@ clustered index  cons
 
 反直觉地，in-memory database快并不是因为不用从disk读。  一般内存足够大的话，OS也会把最近用的cache到memory。 主要的“快”来自于不用把内存里的数据合适方式编码后存储到disk。  因此，in-memory还有一个优点，是可以提供更复杂的数据结构（如redis）
 
-另外，即便使用类似OS的方式，把很久没用到的spill到disk，再把最近用到的加载到内存。  但是相比OS是以page的粒度，in-memory db可以以record的粒度来做，粒度更精细
+另外，即便使用类似OS的内存管理方式，把很久没用到的spill到disk，再把最近用到的加载到内存。  但是相比OS是以page的粒度，in-memory db可以以record的粒度来做，粒度更精细
 
 
 # Transaction Processing or Analytics?
