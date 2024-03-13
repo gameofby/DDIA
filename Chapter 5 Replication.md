@@ -146,13 +146,13 @@ transaction在单机早就实现了。 但是到了分布式系统，很多人�
 datacenter内使用如前所述的leader-follower replication；datacenter之间，leader互相replication
 ![](/images/multi-datacenter.png)
 
-优势：
+pros：
 - Performance: 不用所有write都路由到唯一一个datacenter的leader；local解决write，datacenter间的replication异步完成。观感上性能好很多
 - Tolerance of datacenter outages: 如果leader所在的datacenter挂了，对应的datacenter等着failover就行。 其他datacenter不受影响
 - Tolerance of network problems: single-leader，write如果是跨地域的，需要依赖于datacenter之间基于公网的网络连接，容易不稳定。multi-leader，write都是在local的datacenter完成，不依赖于跨长距离的公网。  只有datacenter leader间的数据同步，需要经过公网
 
-劣势：
-多datacenter，同一数据的多地域并发modify，可能产生conflict。  需要多datacenter的leader间replication时先解决conflict。
+cons：
+多datacenter，同一数据的多地域并发modify，leader之间可能产生conflict。  需要多datacenter的leader间replication时先解决conflict。
 
 
 总的来说，multi-leader和一些DB早有的feature之间，可能产生隐患和问题，比如自增id、trigger等。  因此被视为一个存在危险的新feature，应该尽可能避免使用，除非不得不用
