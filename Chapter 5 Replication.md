@@ -246,8 +246,8 @@ r 最少的read请求的replica数
 
 只要w + r > n，read就一定能读到up to date的value
 
-1. 第1种理解：等价于r > n - w。n - w是最多可能write失败的replica数，read的时候，至少得read到一个up to date，所以r得大于n - w
-2. 第2种理解：w和r之间存在overlap，read至少能读到一个up to date的replica
+1. 第1种理解：w和r之间存在overlap，read至少能读到一个up to date的replica
+2. 第2种理解：等价于r > n - w。n - w是最多可能write失败的replica数，read的时候，至少得read到一个up to date，所以r得大于n - w
 
 `r, w` ，就可以被称作quorum，可以看作write和read的时候需要的最少投票数。  一般会作为replica的配置超参数
 
@@ -256,7 +256,7 @@ r 最少的read请求的replica数
 >A common choice is to make n an odd number (typically 3 or 5) and to set `w = r = (n + 1) / 2 (rounded up)`
 
 - 写少读多的情况
-w = n, r = 1. 这样读起来会很快，因为只用等一个replica成功返回。 但是，只要有一个replica write出问题，集群就会进入无法write的状态
+w = n, r = 1. 这样读起来会很快，因为只用等一个replica成功返回。 但是，只要有一个replica write出问题，集群就会进入write阻塞状态
 
 
 实际上，读写请求是发送到所有n个replica的，w和r只影响client等待几个成功ack。  这样更合理，因为n个replica可能有快有慢
