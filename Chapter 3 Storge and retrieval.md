@@ -196,7 +196,7 @@ clustered index  cons
 **bitmap encoding** 是一种有效的压缩方法
 
 1. column的distinct value肯定少于row的disitnct数
-2. 用n个不同的数代表column所有的distinct value，每个distinct value对应一个独立的bitmap。  bitmap中的每个bit位对应一个row，row的该列value如果和bitmap代表的value相同，bitmap对应位置为1，否则为0
+2. 用n个不同的bitmap代表column所有的distinct value，每个distinct value对应一个独立的bitmap。  bitmap中的每个bit位对应一个row，row的该列value如果和bitmap代表的value相同，bitmap对应位置为1，否则为0
 3. 当数据量很大的时候，bitmap中的1会很稀疏。可以使用run-length encoding解决。如下图中的后半部分
 4. 用bitmap之间位运算来实现OR、AND where conditions。得益于每个bitmap的二进制位数相同（行数相同）；且即使column不同，行的顺序也相同
 ```sql
