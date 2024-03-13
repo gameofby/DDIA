@@ -13,14 +13,14 @@
 2. Ruby：Marshal
 3. Python：pickle
 
-优势
+pros
 >allow in-memory objects to be saved and restored with minimal additional code
 
-劣势
-1. 和语言绑定太深，难以与其他语言、其他系统交互
+cons
+1. 不通用：和语言绑定太深，难以与其他语言、其他系统交互
 2. 反序列化进程需要具备能实例化任意class的能力。  有安全隐患
 > if an attacker can get your application to decode an arbitrary byte sequence, they can instantiate arbitrary classes, which in turn often allows them to do terrible things such as remotely executing arbitrary code
-3. 几乎没有版本管理，向前向后兼容的能力
+3. 几乎没有版本管理，向前向后兼容的能力差
 4. 编解码性能差
    >For example, Java’s built-in serialization is notorious(臭名昭著的) for its bad performance and bloated encoding
 
