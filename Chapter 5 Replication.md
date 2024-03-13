@@ -155,21 +155,21 @@ cons：
 多datacenter，同一数据的多地域并发modify，leader之间可能产生conflict。  需要多datacenter的leader间replication时先解决conflict。
 
 
-总的来说，multi-leader和一些DB早有的feature之间，可能产生隐患和问题，比如自增id、trigger等。  因此被视为一个存在危险的新feature，应该尽可能避免使用，除非不得不用
+总的来说，multi-leader和一些DB早有的feature之间，可能产生隐患和问题，比如自增id、trigger等。  **因此被视为一个存在危险的新feature，应该尽可能避免使用，除非不得不用**
 
-
+以下是一些具体场景
 ### Clients with offline operation
-以calendar场景为例，多设备间需要同步，断网状态下calendar也能要继续使用。类似于一个微缩的multi-datacenter replication（每个client相当于一个datacenter） , leader是每个device的local小DB
+以calendar场景为例，一个人的多设备间需要同步，断网状态下calendar也能要继续使用。类似于一个微缩的multi-datacenter replication（每个client相当于一个datacenter） , leader是每个device的local小DB
 
 ### Collaborative editing
 多人在线协作的场景。  相比于上个canlendar（每个人管理自己的，不太涉及多人）的例子，特别需要处理的是conflict。 类似multi-datacenter replication的方式，使得多用户可以同步编辑，不用获取lock，但是需要在异步replication的时候处理conflict
 
 ## Handling Write Conflicts
 
-multi-leader架构下，handle write conflicts是最大的问题
+multi-leader架构下，handle write conflicts是最大的难题
 
 ### Synchronous versus asynchronous conflict detection
-如果通过synchronous的方式（leaders间写同步，先完成replication同时检测conflict，再返回给用户结果。  如果有conflict，直接抛出来）检测冲突，本质上single-leader一样了。    丢失了asynchronous架构的好处
+如果通过synchronous的方式（leaders间写同步，先完成replication同时检测conflict，再返回给用户结果。  如果有conflict，直接抛出来）检测冲突，本质上single-leader一样了。    获得了一致性，丢失了asynchronous架构的好处
 
 ### Conflict avoidance
 muilti-datacenter的场景下，处理conflicts的方法其实很poorly。直接从源头避免conflict产生，或许是个最简单的办法
@@ -213,7 +213,7 @@ circular和star的topologies，相比于all-to-all，容错性较差，一个nod
 很多系统`conflict detection`做的很差。所以，使用multi-leader的分布式系统，需要特别注意其具体的实现、充分测试，才能保证不用错。    因为system在设计实现上本身不完善，一不小心就掉坑里了
 
 # Leaderless Replication
-普通的分布式架构，是一主多从。 这里讨论第一种特殊情况：**无主**
+普通的分布式架构，是一主多从。 这里讨论第二种特殊情况：**无主**
 
 有leader架构的核心特点：leader来决定write的执行顺序，follower复刻即可
 
