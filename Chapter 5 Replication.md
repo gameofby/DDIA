@@ -95,7 +95,7 @@ DB自带的replication能力，纯粹由DB来实现，可以应对大部分情�
 
 因此，这种场景下需要`read-after-write consistency` (aka `read-your-writes consistency`)。即只保障user write的变更，在刷新页面等操作后，可以马上看到（read）
 
-可能的解法如下：
+possiable solutions：
 - 用户可能修改的（比如自己的主页），都从leader读，其他（比如他人的主页）从follower读。 
 - 上一条不适用于“应用的大部分内容都可能被所有用户修改”的情况，这样leader要承担大部分写、读，扛不住。  这种情况下，需要增加一些其他手段。  比如：记录最后一次更新时间，紧接着1分钟内的read都从leader读；1分钟之外的，如果监控发现follower滞后超过1分钟，也从leader读，否则就可以直接从follower读
 - 客户端记录最后一次write时间戳。follower上读的时候，要求至少该时间戳之前的update replication都要完成，才能读。 时间戳可以是逻辑时钟（标明先后顺序的，比如log sequence number），或者system clock（对各个replica间的clock同步有强依赖）。    同用户多设备的情况，方法需要进一步设计：
