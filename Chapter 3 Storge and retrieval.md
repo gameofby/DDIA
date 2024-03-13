@@ -227,7 +227,7 @@ DBA可以参照日常query分布来决定按照哪个column来排序(如date)。
 - 加速查询（前缀索引的效果）；
 - 排序的列更容易压缩。因为相同的值连续排列
 
-多种排序共存：可以在分布式replication存储上，使用不同的排序方式。然后在查询的时候，挑选最适合当前query的排序。 和row-oriented不同的地方在于，column-orinted实实在在存了多份原始数据（replication）。而row-oriented可以只存不同的索引，原始数据只有一份
+多种排序共存：可以在分布式replication上，使用不同的排序方式。然后在查询的时候，挑选最适合当前query的排序。 和row-oriented不同的地方在于，column-orinted实实在在存了多份原始数据（replication）。而row-oriented可以只存不同的索引，原始数据只有一份
 
 ### Writing to Column-Oriented Storage
 
@@ -240,10 +240,10 @@ DBA可以参照日常query分布来决定按照哪个column来排序(如date)。
 >This is essentially what Vertica does
 
 ### Aggregation: Data Cubes and Materialized Views
-物化视图：轻度聚合，单独存储。 不像OLTP db里的视图，只是一层虚拟视图，查询视图的sql会转为查询table的sql，做不到加速查询，只是抽象对外的接口
+物化视图：轻度聚合，单独存储。 不像OLTP DB里的视图，只是一层虚拟视图，查询视图的sql会转为查询table的sql，做不到加速查询，只是抽象对外的接口
 
 Doris就有这个feature
 
-1. 优势：加速SUM等特定的聚合查询
-2. 劣势：写成本较大（但是对于“重读”的数仓，用空间来换时间还是划算的）；对应需要从最细粒度原始数据的查询无能为力，比如查询分位值等
+1. pros：加速SUM等特定的聚合查询
+2. cons：写成本较大（但是对于heavy load of writing的数仓，用空间来换时间还是划算的）；对应需要从最细粒度原始数据的查询无能为力，比如查询分位值等
 
