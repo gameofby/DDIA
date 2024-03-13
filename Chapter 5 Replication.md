@@ -338,7 +338,7 @@ concurrent != 时间上同时发生。而是是否互相都不满足happens-befo
 
 介绍一种可以capture concurrent operations的算法
 
-场景：多个client同时往一个cart添加食品。（类似去饭店吃饭到店多个人扫同一个二维码点餐）
+场景：多个client同时往一个cart添加食品。（类似去饭店吃饭，多个人扫同一个二维码点餐）
 
 ![[Pasted image 20230908121514.png]]
 
