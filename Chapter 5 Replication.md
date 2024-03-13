@@ -106,7 +106,7 @@ possiable solutions：
 
 
 ## Monotonic（单调） Reads
-场景：user多次read，请求打到了不同的asynchronous followers，有可能后read相比于先read看到的信息反而变少了（比如第一次看到一条新评论，刷新下又没了）。因为每个follower异步 catch up leader数据的进度不同
+场景：user多次read，请求打到了不同的asynchronous followers，有可能第二次read相比于第一次read看到的信息反而变少了（比如第一次看到一条新评论，刷新下又没了）。因为每个follower异步 catch up leader数据的进度不同
 
 > moving backward in time
 
@@ -119,12 +119,12 @@ possiable solutions：
 具体实现：如何把同user的read请求固定到同一个replica响应？比如哈希user id等方式。  如果对应replica挂了，就不得不换一个replica，还是可能打破`monotonic reads`
 
 ## Consistent Prefix Reads
-场景：因果性（先后顺序）被破坏。比如聊天的场景，同步人看到的对话顺序不同，破坏了上下文的前后依赖、因果性。具体见图：
+场景：因果性（先后顺序）被破坏。比如聊天的场景，不同的人看到的对话顺序不同，破坏了上下文的前后依赖、因果性。具体见图：
 ![](/images/consistent-prefix-reads.png)
 
 解法：`consistent prefix reads`
 
-听起来很好实现，wirte保持顺序，read按顺序读。  但实际上，尤其在partitioned(sharded)类型的DB种，无法保证**全局写的order**。  可以尝试把有因果性的wirte都写入到同一个partition，但实际实现起来，无法保证执行效率。   有一些算法可以进一步解决该问题，详见p186。
+听起来很好实现，wirte保持顺序，read按顺序读。  但实际上，尤其在partitioned(sharded)类型的DB中，无法保证**全局写的order**。  可以尝试把有因果性的write都写入到同一个partition，但实际实现起来，无法保证执行效率。   有一些算法可以进一步解决该问题，详见p186。
 
 ## Solutions for Replication Lag
 抽象总结一下：
