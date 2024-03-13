@@ -212,6 +212,7 @@ clustered index  cons
 ```
 
 详细见图：
+将一列原始数据，重新编码为bi t
 ![](/images/column-compression.png)
 
 **memory bandwidth and vectorized processing**
