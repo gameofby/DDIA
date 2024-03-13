@@ -266,9 +266,9 @@ w = n, r = 1. 这样读起来会很快，因为只用等一个replica成功返�
 
 即使实现了`w + r > n` ，仍然可能存在一些edges，可能return stale values
 
-- sloppy quorum？ 等183
+- sloppy quorum？ 下一个小节有详细解释
 - 写并发：安全的solution是merge concurrent writes。 但是如果merge是基于timestamp，最近的write wins，有可能由于clock skew(时钟偏差)导致真正latest 的write被丢弃
-- 读写并发：write小于w，wirte阻塞，但是未回滚已经成功的部分replica。这时候read仍然可进行，old new的value都有可能被读到
+- 读写并发：write小于w，write阻塞，但是未回滚已经成功的部分replica。这时候read仍然可进行，old和new的value都有可能被读到
 - fail over：如果一个持有new value的replica fail over后，是从old value replica同步的数据。fail over后，实际持有new value的replica可能小于w。  打破了quorum condition
 - 即使以上提到的情况都ok，也仍有可能有其他edge cases。
 > we shall see in “Linearizability and quorums” on page 334
@@ -277,7 +277,7 @@ w = n, r = 1. 这样读起来会很快，因为只用等一个replica成功返�
 
 ### Monitoring staleness
 
-leader-based DB: 监控比较简单，write在各个node都是同序的，比价下log number，就知道follwer有没有lag了
+leader-based DB: 监控比较简单，write在各个node都是同序的，比较下log number，就知道follwer有没有lag了
 
 leaderless DB: 很难。而且如果只使用了read repair来避免stale，staleness可能很严重，尤其是不怎么会被read的value
 
@@ -287,7 +287,7 @@ reference \[48\] 有一些相关研究，但是仍不是常见的做法
 
 核心点是，集群真正的nodes数量大于n。 这样，当实际执行n、w、r的n个node的quorum被打破的时候，wirte仍可以在n之外的其他node上执行。  待n内的节点恢复后，再把数据移交回（hinted handoff）n个node
 
-wirte不因为quorum打破而停滞，提升了集群的durability
+write不因为quorum打破而停滞，提升了集群的durability
 
 书中举了个很生活化、很好理解的例子：
 > By analogy, if you lock yourself out of your house, you may knock on the neighbor’s door and ask whether you may stay on their couch temporarily. Once the network interruption
