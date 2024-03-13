@@ -14,12 +14,12 @@ follower 1 is synchronous
 3. 其他clients对write可见
 
 synchronous的优劣
-1. 优势：一致性强保证。要么都成功，要么都失败
-2. 劣势：可能由于某一个环节异常，发生的write阻塞
+- pros(consistency)：一致性强保证。要么都成功，要么都失败
+- cons(availability)：可能由于某一个环节异常，发生的write阻塞
 
 应对synchronous劣势的方式
-1. 1个follower synchronous，其他的都asynchronous。如果synchronous follower挂了，其他任一asynchronous follower补上
-2. 都asynchronous：虽然在durability上有折衷，纯异步还是拥有广泛的应用，尤其是follower特别多、地理分散分布的情况
+1. 1个follower synchronous，其他的都asynchronous。如果synchronous follower挂了，其他任一asynchronous follower补上。like quorum protocol
+2. 都asynchronous：虽然在consistency上有折衷，纯异步还是拥有广泛的应用，尤其是follower特别多、地理分散分布的情况
 
 ## Setting Up New Followers
 
