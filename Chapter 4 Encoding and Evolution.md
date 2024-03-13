@@ -133,7 +133,7 @@ read的时候，用write schema解析，然后对比两个schema的field name，
 - forward compatibility: a new version of the schema as writer and an old version of the schema as reader
 - backward compatibility:  a old version of the schema as writer and an new version of the schema as reader
 
-**这里“前、后”，指的是前端、后端的角色。被兼容的角色，从old version -> new version**
+**这里“前、后”，指的是前端、后端的角色。被兼容的角色是new version**
 ```
 比如：向前兼容，schema变化的是writer，reader需要向“前”兼容变化的writer
 ```
