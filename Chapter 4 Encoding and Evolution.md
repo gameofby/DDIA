@@ -1,5 +1,6 @@
-1. 向前兼容：新代码可以读老代码生成的老数据。或者对于service间调用，是新server向老client respond数据
-2. 向后兼容：老代码可以读新代码生成的新数据。或者对于service间调用，是老client向新server request数据
+向前兼容：新代码可以读老代码生成的老数据。或者对于service间调用，是新server向老client respond数据
+
+向后兼容：老代码可以读新代码生成的新数据。或者对于service间调用，是老client向新server request数据
 
 为什么需要向前向后兼容？
 1. 大型后端应用一般都有灰度发布的需求，线上会同时存在新老版本的server
