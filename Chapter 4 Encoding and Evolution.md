@@ -205,7 +205,7 @@ binary encoding based on schema相比于JSON、XML等的优势
 schema change（比如加字段）的时候，如果老数据完全改换新的schema，数据全刷一遍的成本太高。  因此都是DB底层做兼容。 例如read老数据的时候，对不存在的column赋予默认值
 （这里想起了公司内系统的各种重构，以及和数据仓库协同升级的方式）
 
-schema evolution使得schema展示唯一，但实际上底层的数据因时间而有差异。  DB做了中间的兼容
+schema evolution使得schema展示唯一，但实际上底层的数据因时间而有差异。  DB做了中间的兼容（adapter）
 
 ### Archival storage
 dump数据的各种场景（如snapshot、analytic warehouse等），即使源数据存在多个版本的encoding，在dump的时候一律按照latest schema dump。  因为反正要全扫一遍
