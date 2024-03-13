@@ -58,12 +58,12 @@ follower挂掉恢复时，根据自己的log，定位最后一个已经处理的
 
 以上缺陷可以case by case解决。如非确定性函数，可以在leader先执行拿到结果，再传输给follower。但是边界情况太多，处理起来比较麻烦
 
-MySQL在5.1之前用的就是statement-based replication。新版本的默认方式，已经更换为row-based replication
+MySQL在5.1之前用的就是**statement-based replication**。新版本的默认方式，已经更换为**row-based replication**
 
 ### Write-ahead log (WAL) shipping
 如Chapter2所述的LSM-Tree和B-Tree，都有类似Write-ahead log（WAL）的log存储。可以直接使用WAL作为leader和follower之间同步的数据
 
-劣势：WAL比较底层，到了disk block级别，如何解读WAL依赖存储引擎。 WAL和存储引擎耦合太紧密。如果存储引擎升级版本，难以做到向前向后兼容
+cons：WAL比较底层，到了disk block级别，如何解读WAL依赖存储引擎。 WAL和存储引擎耦合太紧密。如果存储引擎升级版本，难以做到向前向后兼容
 
 **replication协议**支持版本兼容的重要性：可以做到zero-downtime（不停机）升级。  方法是，先升级follower，然后通过一次failover实现leader更换
 
