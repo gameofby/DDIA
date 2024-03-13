@@ -48,7 +48,7 @@ JSON里无法区分integer和float，并且没有精度保证，例如：twitter
 > MessagePack, BSON, BJSON, UBJSON, BISON. 
 > WBXML and Fast Infoset, for example.
 
-劣势
+cons
 1. 因为没有单独的schema定义字段集合，json需要把所有的field name(key)存储在数据里。本身是一种空间浪费。以MessagePack为例，实际存下来没比textual JSON短多少（81 bytes -> 66 bytes），还损失了可读性。  不太划算
    ![](/images/MessagePack.png)
 
@@ -56,7 +56,7 @@ JSON里无法区分integer和float，并且没有精度保证，例如：twitter
 
 共同点
 1. require schema
-2. with a code generation tool for kinds of languages
+2. with a code generation tool for kinds of programming languages
 
 Thrift第一种编码：BinaryProtocol
 - type annotation: to indicate whether it is a string, integer, list, etc.
@@ -75,7 +75,7 @@ Protocol buffer
 ![](/images/protocolbuffer.png)
 
 ### Field tags and schema evolution
-新增字段
+新增field
 如果是required，new code读取old data会fail。所以为了向后兼容，新增的字段只能是optional, 或者包含default value
 
 删除field
