@@ -68,18 +68,16 @@ weak isolation会造成bug不只是停留在理论上。现实中发生过造成
 ## Read Committed
 
  _read commited_ 是transaction isolation的最基础level。即：
-- read到的都是committed的数据
-- write覆盖的也都是committed的数据
+- read到的都是committed的数据(no dirty reads)
+- write覆盖的也都是committed的数据(no dirty writes)
 ### No dirty reads
 
 - not committed data: 看到了transaction的部分数据
 - not roll-back data：看到了未回滚完成的数据
 
 ### No dirty writes
-write层面，通过加行锁的方式，保证write的顺序化（非并发）
-
-只能解决仅有write并发带来的问题。  如果两个transaction既有read，也有write，仍可能dirty reads。比如7-1图的counter increment的场景
-![[Pasted image 20240101190402.png]]
+通过加行级别写锁的方式，可以保证write的顺序化。但是行锁只能解决"仅write并发"带来的问题。  如果两个transaction既有read，也有write，仍可能发生dirty read。比如7-1图的counter increment场景，第二个transaction read了第一个transaction uncommitted的数据
+![](/images/Pasted%20image%2020240101190402.png)
 
 ### Implementing read committed
 
@@ -93,7 +91,7 @@ dirty read
 
 read committed导致 _read skew_（aka _nonrepeatable read_） 现象
 
-![](Pasted%20image%2020231106191930.png)
+![](/images/Pasted%20image%2020231106191930.png)
 
 Account1/2都是Alice的账户，一共1000元，她操作从Account2向Account1转账100元。        Alice读两个account是同时发起的（transaction），但是由于同时有两个write，虽然满足read committed，但是刚好Alice看到的两个账户结果加起来不等于100
 
