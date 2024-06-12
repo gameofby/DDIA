@@ -67,6 +67,8 @@ weak isolation会造成bug不只是停留在理论上。现实中发生过造成
 
 ## Read Committed
 
+>Read committed is a very popular isolation level. It is the default setting in Oracle 11g, PostgreSQL, SQL Server 2012, MemSQL, and many other databases.
+
  _read commited_ 是transaction isolation的最基础level。即：
 - read到的都是committed的数据(no dirty reads)
 - write覆盖的也都是committed的数据(no dirty writes)
@@ -76,15 +78,15 @@ weak isolation会造成bug不只是停留在理论上。现实中发生过造成
 - not roll-back data：看到了未回滚完成的数据
 
 ### No dirty writes
-通过加行级别写锁的方式，可以保证write的顺序化。但是行锁只能解决"仅write并发"带来的问题。  如果两个transaction既有read，也有write，仍可能发生dirty read。比如7-1图的counter increment场景，第二个transaction read了第一个transaction uncommitted的数据
+通过加行级别写锁的方式，可以解决dirty writes的问题，但是无法完全避免`race condition`。比如7-1图的counter increment场景，后一个transaction在前一个committed后才write，read的也是committed的数据，做到了read commited，但仍然得到错误的结果。  **这里有个疑问，如果有这个race condition的问题，为啥很多流行数据库的default isolation level是read committed？**
 ![](/images/Pasted%20image%2020240101190402.png)
 
 ### Implementing read committed
 
-dirty write：行级别的写锁
+dirty write：use row-level write locks, 一个transaction在write的时候，需要先拿到lock，直到comitted或者roll back后，才释放该lock。  **这里有个疑问，lock是在包含rite的transaction一开始就获取，还是执行到write环节的时候才获取？**
 
 dirty read
-- 使用同一个锁，有write的时候read就阻塞。  但是这种方式在write比较慢的情况下，read完全不可读，应用层无法接受
+- 使用same row-level lock，有write lock的时候read就阻塞。 read完成后释放lock。 但是这种方式在write比较慢的情况下，read完全不可读，应用层无法接受
 - 冗余版本，write没有commited的时候read old version；commited后read new version。不阻塞读（Apache Doris就这么干的）
 
 ## Snapshot Isolation and Repeatable Read
