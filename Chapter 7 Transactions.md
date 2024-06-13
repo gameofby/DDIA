@@ -72,22 +72,26 @@ weak isolation会造成bug不只是停留在理论上。现实中发生过造成
  _read commited_ 是transaction isolation的最基础level。即：
 - read到的都是committed的数据(no dirty reads)
 - write覆盖的也都是committed的数据(no dirty writes)
-### No dirty reads
 
-- not committed data: 看到了transaction的部分数据
-- not roll-back data：看到了未回滚完成的数据
+### No dirty reads(脏读)
+
+write视角：no dirty reads意味着任意writes只有在其所属的transaction committed或者roll back完成后，write带来的变更才visibale
+read视角：read拿到的数据都是committed或者roll back完成的终态数据，不存在脏读
+
 
 ### No dirty writes
+和No dirty reads理解类似。
+
 通过加行级别写锁的方式，可以解决dirty writes的问题，但是无法完全避免`race condition`。比如7-1图的counter increment场景，后一个transaction在前一个committed后才write，read的也是committed的数据，做到了read commited，但仍然得到错误的结果。  **这里有个疑问，如果有这个race condition的问题，为啥很多流行数据库的default isolation level是read committed？**
 ![](/images/Pasted%20image%2020240101190402.png)
 
 ### Implementing read committed
 
-dirty write：use row-level write locks, 一个transaction在write的时候，需要先拿到lock，直到comitted或者roll back后，才释放该lock。  **这里有个疑问，lock是在包含rite的transaction一开始就获取，还是执行到write环节的时候才获取？**
+dirty write：use row-level write locks, 一个transaction在write的时候，需要先拿到**排他写锁**，直到committed或者roll back后，才释放该lock。按照No dirty write的定义，这里的lock是在write开始时获取，在transaction完成时释放
 
 dirty read
-- 使用same row-level lock，有write lock的时候read就阻塞。 read完成后释放lock。 但是这种方式在write比较慢的情况下，read完全不可读，应用层无法接受
-- 冗余版本，write没有commited的时候read old version；commited后read new version。不阻塞读（Apache Doris就这么干的）
+- 使用same row-level lock，有write lock的时候read就阻塞。 read时申请lock，read完成后立即释放lock。 但是这种方式在write比较慢的情况下，read performance会受到很大影响
+- DB remembers both the old committed value and the new value(just two version), write没有commited的时候read old version；commited后read new version
 
 ## Snapshot Isolation and Repeatable Read
 
@@ -103,7 +107,7 @@ Account1/2都是Alice的账户，一共1000元，她操作从Account2向Account1
 - 数据库backup执行时间长，要backup很多数据。不能backup里既有new version，也有old version。 backup内，预期是同时保持new version，或者同时保持old version
 - OLAP。大数据分析场景，query执行复杂且慢，不能一部分读old version，一部分读到new version
 
-_Snapshot isolation_ 是针对这类场景的最常用解法。可以看作一些transaction都committed的集合，一个snapshot中不存在未commited的trasaction的数据
+_Snapshot isolation_ 是针对这类场景的最常用解法。可以看作一些transaction都committed的集合，一个snapshot中不存在未commited的transaction的数据
 > it is supported by PostgreSQL, MySQL with the InnoDB storage engine, Oracle, SQL Server, and others
 
 
@@ -112,7 +116,7 @@ _Snapshot isolation_ 是针对这类场景的最常用解法。可以看作一�
 snapshot isolation也是使用write locks来避免dirty writes。但是这个lock只block其他write，不阻碍read，同样read也不阻碍write
 > a key principle of snapshot isolation is readers never block writers, and writers never block readers.
 
-read committed通过write lock，只实现了单个write的ACID。 snapshot isolation在此基础上，可以在read不阻碍的前提下，解决 _read skew_ 问题
+read committed通过write lock，只实现了单个write的ACID。 snapshot isolation在此基础上，可以在read不阻塞的前提下，解决 _read skew_ 问题
 
 这种技术也被称为 _multiversion concurrency control (MVCC)_
 
