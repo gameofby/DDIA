@@ -75,7 +75,7 @@ weak isolation会造成bug不只是停留在理论上。现实中发生过造成
 
 ### No dirty reads(脏读)
 
-write视角：no dirty reads意味着任意writes只有在其所属的transaction committed或者roll back完成后，write带来的变更才visibale
+write视角：no dirty reads意味着任意writes只有在其所属的transaction committed或者roll back完成后，write带来的变更才对其他reads visibale  
 read视角：read拿到的数据都是committed或者roll back完成的终态数据，不存在脏读
 
 
@@ -90,7 +90,7 @@ read视角：read拿到的数据都是committed或者roll back完成的终态数
 dirty write：use row-level write locks, 一个transaction在write的时候，需要先拿到**排他写锁**，直到committed或者roll back后，才释放该lock。按照No dirty write的定义，这里的lock是在write开始时获取，在transaction完成时释放
 
 dirty read
-- 使用same row-level lock，有write lock的时候read就阻塞。 read时申请lock，read完成后立即释放lock。 但是这种方式在write比较慢的情况下，read performance会受到很大影响
+- 使用same row-level lock，read时申请lock，read完成后立即释放lock，有write lock的时候read就阻塞。  但是这种方式在write比较慢的情况下，read performance会受到很大影响
 - DB remembers both the old committed value and the new value(just two version), write没有commited的时候read old version；commited后read new version
 
 ## Snapshot Isolation and Repeatable Read
@@ -103,11 +103,11 @@ Account1/2都是Alice的账户，一共1000元，她操作从Account2向Account1
 
 核心问题是，两个write虽然保证了顺序执行，但是没有成为一整个transaction
 
-这种暂时性的非一致性，在下面两种场景下更加不可接受：
+这种暂时性的非一致性，在下面两种场景下不可接受：
 - 数据库backup执行时间长，要backup很多数据。不能backup里既有new version，也有old version。 backup内，预期是同时保持new version，或者同时保持old version
 - OLAP。大数据分析场景，query执行复杂且慢，不能一部分读old version，一部分读到new version
 
-_Snapshot isolation_ 是针对这类场景的最常用解法。可以看作一些transaction都committed的集合，一个snapshot中不存在未commited的transaction的数据
+_snapshot isolation_ 是针对这类场景的最常用解法，snapshot可以看作多个committed transaction的集合，其中不存在未committed的数据
 > it is supported by PostgreSQL, MySQL with the InnoDB storage engine, Oracle, SQL Server, and others
 
 
@@ -120,12 +120,12 @@ read committed通过write lock，只实现了单个write的ACID。 snapshot isol
 
 这种技术也被称为 _multiversion concurrency control (MVCC)_
 
-snapshot也可以用来实现read committed。不同之处在于，read committed的snapshot只包含单个write； 而snapshot isolation用于整个trasaction，可能包含一系列读写操作
+snapshot也可以用来实现read committed。不同之处在于，read committed只包含单个write； 而snapshot isolation用于整个transaction，可能包含一系列读写操作
 
 具体实现上，snapshot isolation会在每行数据上增加专门的字段用来记录transaction id，来区分version
 
-- `created_by` field，记录insert这条数据的transaction
-- `deleted_by` field，记录删除这条数据的transaction。暂时只是软删除，保留version。  等确认没有任何transaction access这条数据的时候，由单独的GC进程执行硬删除
+- `created_by` field，记录insert这条数据的transaction id
+- `deleted_by` field，记录delete这条数据的transaction id。delete为软删除，保留version。等确认没有任何transaction access这条数据的时候，由单独的GC进程执行硬删除
 
 ### Visibility rules for observing a consistent snapshot
 
