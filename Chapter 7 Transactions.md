@@ -29,9 +29,9 @@
 ## Single-Object and Multi-Object Operations
 
 ### Single-obejct writes
-single object的操作也是需要atomicity和isolation的，否则会遇到以下情况
+single object(这里的object指row, document, record等DB逻辑对象)的操作也是需要atomicity和isolation的，否则会遇到以下情况
 - 较大的object write了一半网络断了
-- overwrite遇到了断电。覆盖一半，还是保留old object？
+- overwrite遇到了断电。保持已经overwrite的一部分object，还是roll back old object？
 - 并发场景，write没执行完的时候，read是否能读到中间态的write新数据？
 
 ### The need for multi-object transactions
@@ -39,7 +39,7 @@ single object的操作也是需要atomicity和isolation的，否则会遇到以�
 Do we need multi-object transactions at all? 只有single object的transaction保障够吗？或许一些简单的场景是ok的，但是以下例子表明了multi-obejct transaction的必要性
 
 - foreign key in relational DB
-- verticle - edge - verticle in graph DB
+- vertex - edge - vertex in Graph DB
 - 文档型数据库，因为缺乏join功能，促进了denormalization（In computing, denormalization is the process of attempting to optimize the read performance of a database by adding redundant data or by grouping data）的使用。有了denormalized data，原数据和denormalized data就必要一起更新
 - secondary index，需要和源数据、primary index一起更新
 
@@ -82,16 +82,18 @@ read视角：read拿到的数据都是committed或者roll back完成的终态数
 ### No dirty writes
 和No dirty reads理解类似。
 
-通过加行级别写锁的方式，可以解决dirty writes的问题，但是无法完全避免`race condition`。比如7-1图的counter increment场景，后一个transaction在前一个committed后才write，read的也是committed的数据，做到了read commited，但仍然得到错误的结果。  **这里有个疑问，如果有这个race condition的问题，为啥很多流行数据库的default isolation level是read committed？**
-![](/images/Pasted%20image%2020240101190402.png)
-
 ### Implementing read committed
 
-dirty write：use row-level write locks, 一个transaction在write的时候，需要先拿到**排他写锁**，直到committed或者roll back后，才释放该lock。按照No dirty write的定义，这里的lock是在write开始时获取，在transaction完成时释放
+**solutions for dirty write**  
+use row-level write locks, 一个transaction在write的时候，需要先拿到**排他写锁**，直到committed或者roll back后，才释放该lock。按照No dirty write的定义，这里的lock是在write开始时获取，在transaction完成时释放
 
-dirty read
-- 使用same row-level lock，read时申请lock，read完成后立即释放lock，有write lock的时候read就阻塞。  但是这种方式在write比较慢的情况下，read performance会受到很大影响
-- DB remembers both the old committed value and the new value(just two version), write没有commited的时候read old version；commited后read new version
+但是row-level write locks无法完全避免`race condition`。比如7-1图的counter increment场景(图中每个user的前后read和write，并未合并为一个transaction)，后一个transaction在前一个committed后才write，read的也是committed的数据，做到了read commited，但仍然得到错误的结果。  **这里有个疑问，如果有这个race condition的问题，为啥很多流行数据库的default isolation level是read committed？**
+![](/images/Pasted%20image%2020240101190402.png)
+
+
+**solutions for dirty read**  
+- lock: 使用same row-level lock，read时申请lock，read完成后立即释放lock，有write lock的时候read就阻塞。  但是这种方式在write比较慢的情况下，read performance会受到很大影响
+- copy: DB remembers both the old committed value and the new value(just two version), write没有commited的时候read old version；commited后read new version
 
 ## Snapshot Isolation and Repeatable Read
 
