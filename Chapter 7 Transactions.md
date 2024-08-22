@@ -124,16 +124,39 @@ snapshot isolation可以在read不阻塞的前提下，解决 _read skew_ 现象
 
 snapshot也可以用来实现read committed。不同之处在于，read committed只包含单个write； 而snapshot isolation用于整个transaction，可能包含一系列读写操作
 
-具体实现上，snapshot isolation会在每行数据上增加专门的字段用来记录transaction id，来区分version
+具体实现上，snapshot isolation会在每行数据上增加专门的字段用来记录transaction id。Figure 7-7给出了一个例子
 
 - `created_by` field，记录insert这条数据的transaction id
 - `deleted_by` field，记录delete这条数据的transaction id。delete为软删除，保留version。等确认没有任何transaction access这条数据的时候，由单独的GC进程执行硬删除
 
+![](images/figure7-7.png)
+
 ### Visibility rules for observing a consistent snapshot
+给object打上transaction id后，如何使用这个记录来做snapshot isolation? 具体的visibility rules是怎样的？
+
+when a transaction reading from DB，以下数据对它不可见：
+1. transaction开始的时刻，仍在执行中的其他transaction update（create or delete）的数据
+2. 已经aborted的transaction update
+3. 那些transaction ID 晚于 current transaction的update，即使已经committed也不可见
 
 
+结合Figure 7-7，因为`txid=13`是在`txid=12`之后开始的，所以即使`txid=13`已经committed了, `txid=12`最后read到的account2的值仍是old value 500
 
 
+### Indexes and snapshot isolation
+在这种使用multi-version snapshot的DB中，indexes如何正常工作？
 
+一种方案是:  
+- 对于multi-version objects: index维护对所有version object的索引，同时在查询的时候，使用index query过滤掉那些不应该被当前transaction看到的object
+- 对于deleted object versions: 如果GC删除了某个old version object, 应该同时删除其index信息
+
+另一种在CouchDB, Datomic, and LMDB中使用的方案是:  
+对index也使用copy-on-write, update object的时候，受影响的index page以及其直到root的所有parent pages，copy出新的版本。 当然，也需要background process做compaction和GC
+
+### Repeatable read and naming confusion
+snapshot isolation在SQL标准中没有明确定义，因为这份标准基于1975年System R对isolation level的定义，当时snapshot isolation尚未被发明。
+
+SQL标准倒是定义了repeatable read, 但是它有两个问题。一是它和snapshot isolation并不完全相同，二是它其定义本身也有很多歧义、不准确的地方。 导致的结果是，即使有些DB声称实现了repeatable read，但实际上并没有达到真正的repeatable read（有其他研究给出了更完备的定义），同时已经几乎没有人真的了解什么是真正的repeatable read
+>In Oracle it is called serializable, and in PostgreSQL and MySQL it is called repeatable read
 
 
