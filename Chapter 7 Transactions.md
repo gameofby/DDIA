@@ -115,12 +115,12 @@ _snapshot isolation_ 是针对这类场景的最常用解法，snapshot可以看
 
 ### Implementing snapshot isolation
 
-snapshot isolation也是使用write locks来避免dirty writes。但是这个lock只block其他write，不阻碍read，同样read也不阻碍write
+snapshot isolation也是使用write locks来避免dirty writes。但是这个lock只block其他write，不阻碍read。同样read也不阻碍write
 > a key principle of snapshot isolation is readers never block writers, and writers never block readers.
 
-read committed通过write lock，只实现了单个write的ACID。 snapshot isolation在此基础上，可以在read不阻塞的前提下，解决 _read skew_ 问题
+read committed通过write lock，只实现了单个write的ACID。 
 
-这种技术也被称为 _multiversion concurrency control (MVCC)_
+snapshot isolation可以在read不阻塞的前提下，解决 _read skew_ 现象。这种技术也被称为 _multiversion concurrency control (MVCC)_
 
 snapshot也可以用来实现read committed。不同之处在于，read committed只包含单个write； 而snapshot isolation用于整个transaction，可能包含一系列读写操作
 
@@ -130,6 +130,7 @@ snapshot也可以用来实现read committed。不同之处在于，read committe
 - `deleted_by` field，记录delete这条数据的transaction id。delete为软删除，保留version。等确认没有任何transaction access这条数据的时候，由单独的GC进程执行硬删除
 
 ### Visibility rules for observing a consistent snapshot
+
 
 
 
