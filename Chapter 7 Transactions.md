@@ -159,4 +159,33 @@ snapshot isolation在SQL标准中没有明确定义，因为这份标准基于19
 SQL标准倒是定义了repeatable read, 但是它有两个问题。一是它和snapshot isolation并不完全相同，二是它其定义本身也有很多歧义、不准确的地方。 导致的结果是，即使有些DB声称实现了repeatable read，但实际上并没有达到真正的repeatable read（有其他研究给出了更完备的定义），同时已经几乎没有人真的了解什么是真正的repeatable read
 >In Oracle it is called serializable, and in PostgreSQL and MySQL it is called repeatable read
 
+## Preventing Lost Updates
+主要讨论并发写可能的带来的update丢失问题（known as `lost update problem`），尤其是多个application层面的`read-modify-write cycle`同时操作一个object(例如counter, document, wiki page)
+
+### Atomic write operations
+一般DB都自带了atomic operations，通过exclusive lock实现原子性。能用则用，避免application层面自己实现`read-modify-write cycle`导致的lost update problem
+
+But, atomic operations不是万能的，比如concurrently 写wiki page，就无法用简单的atomic operations来解决
+
+同时，ORM使得用户很容易在application层面自己做`read-modify-write cycle`，稍不留神，就导致lost update problem
+
+### Explicit locking
+第二种办法是application层面显式加锁，处理一些atomic operations无法解决的复杂场景
+
+### Automatically detecting lost updates
+第三种解法是，由DB engine来自动检测lost updates, 然后retry那些受影响的transaction。这个feature可以很高效地和snapshot isolation结合起来实现
+
+> PostgreSQL’s repeatable read, Oracle’s serializable, and SQL Server’s snapshot isolation levels automatically detect when a lost update has occurred and abort the offending transaction. However, MySQL InnoDB’s repeatable read does not detect lost updates.
+
+### Compare-and-set
+如果DB没有transaction功能，但是可能提供了一种atomic compare-and-set operation，原理是在`read-modify-write cycle`中，write时object的value需要和read时（old value）保持一致，才执行write，否则中止。
+
+但是，如果DB提供了snapshot isolation，write时读到的old value是snapshot版本，并不能反映obeject的真实值。 等write真正执行时，obejct的value可能已经被更新了。 所以在使用DB的compare-and-set功能之前，一定要搞清楚它是否concurrently safe。
+
+
+
+
+
+
+
 
