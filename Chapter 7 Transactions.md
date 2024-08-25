@@ -183,6 +183,15 @@ But, atomic operations不是万能的，比如concurrently 写wiki page，就无
 但是，如果DB提供了snapshot isolation，write时读到的old value是snapshot版本，并不能反映obeject的真实值。 等write真正执行时，obejct的value可能已经被更新了。 所以在使用DB的compare-and-set功能之前，一定要搞清楚它是否concurrently safe。
 
 
+## Write Skew and Phantoms
+
+concurrent writes中，不只有dirty wirtes和lost update这两种race condition。下图举出了另一种情况，被称为`read skew`。doctors oncall shift需要同时至少有1位医生在现场，但是下图这种情况导致2位医生都off duty
+![](images/figure7-8.png)
+
+### Characterizing write skew
+
+
+
 
 
 
