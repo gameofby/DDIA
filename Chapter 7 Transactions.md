@@ -184,11 +184,50 @@ But, atomic operations不是万能的，比如concurrently 写wiki page，就无
 
 
 ## Write Skew and Phantoms
-
-concurrent writes中，不只有dirty wirtes和lost update这两种race condition。下图举出了另一种情况，被称为`read skew`。doctors oncall shift需要同时至少有1位医生在现场，但是下图这种情况导致2位医生都off duty
+concurrent writes的情况下，不只会出现dirty wirtes和lost update这两种race condition。下图举出了另一种情况，被称为`write skew`。doctors oncall shift需要同时至少有1位医生oncall，但是下图这种情况导致2位医生都off duty
 ![](images/figure7-8.png)
 
 ### Characterizing write skew
+write skew和lost update的不同之处在于，concurrent transactions write **different objects**。atomic operations和snapshot isolation对此无能为力，因为这两种方法都是针对concurrent write同一个object的情况
+
+configurable constraints和explicit lock（explicitly lock the rows that the transaction depends on）可以解决一部分write skew场景
+
+最完备的解法是真正实现serializable isolation，完全意义上的isolation
+
+### More examples of write skew
+write skew并不是一种罕见的情况，书里在这一小节举出了更多write skew的例子
+
+### Phantoms causing write skew
+结合前述的介绍，可以抽象总结出导致write skew的具体condition
+
+1. concurrent transactions 执行select query，读取统计数据
+2. 基于select到的数据，application层面判定requirement condition是否满足。如果满足，继续执行3
+3. 执行write（insert, delete, update） ，执行结果会直接改变1中query查询到的数据。这里尤其关注insert new objects的场景，这也是lock或者snapshot isolation不灵光的原因。object之前尚不存在，没有可加锁或者可snapshot的对象
+
+这里可以引出`Phantom`的定义
+>This effect, where a write in one transaction changes the result of a search query in another transaction, is called a phantom
+
+### Materializing conflicts
+这里提出了一种workaround。没有object可以加锁，那就预先造出来这些对象，然后给这些对象加锁。这种方法被称为`materializing conflicts`
+
+比如meeting room的场景，可以先把time slots预先create出来。 
+
+但是，这种方法只是没有办法的办法，过于复杂。以及：
+> it’s ugly to let a concurrency control mechanism leak into the application data model
+
+A serializable isolation level是理想的方案
+
+# Serializability
+想要理解为什么serializable isolation是困难的，可以先从如何实现serializable isolation入手
+
+## Actual Serial Execution
+
+
+
+
+
+
+
 
 
 
