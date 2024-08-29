@@ -221,7 +221,13 @@ A serializable isolation level是理想的方案
 想要理解为什么serializable isolation是困难的，可以先从如何实现serializable isolation入手
 
 ## Actual Serial Execution
+serializability是一种显而易见的规避concurrent问题的方式：顺序地、单线程地一次执行一个transaction。既然这么显而易见，为什么DB设计者们花了30年追求performance后，突然又觉得serializability这条路可行了呢？主要原因有二
+1. RAM越来越便宜，transaction执行过程可以都在memory中完成，无需雨disk交互。使得执行速度大大加快，顺序执行的latency变得可接受
+2. 大家发现，OLTP的transactions大多都short and small。 OLAP的query相比之下大很大，但是基本都是read-only，可以通过snapshot isolation解决
 
+### Encapsulating transactions in stored procedures
+传统DB的transaction支持interactive with application code, 甚至user input，这使得DB要花很多时间等待input（包括network cost）。single-threaded DB的transaction对这一点做了限制，一个transaction必须一次性提交到DB执行，这样节省了network消耗，数据也可以一次性加载到memmory，省掉了disk IO，使得transaction可以更快的完成执行
+![](/images/figure7-9.png)
 
 
 
