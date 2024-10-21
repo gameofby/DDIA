@@ -229,6 +229,23 @@ serializability是一种显而易见的规避concurrent问题的方式：顺序�
 传统DB的transaction支持interactive with application code, 甚至user input，这使得DB要花很多时间等待input（包括network cost）。single-threaded DB的transaction对这一点做了限制，一个transaction必须一次性提交到DB执行，中间不允许和application及以上层交互。这样节省了network消耗，数据也可以一次性加载到memory，省掉了disk IO，使得transaction可以更快的完成执行
 ![](/images/figure7-9.png)
 
+### Pros and cons of stored procedures
+
+cons:
+1. 每种DB都有自己的支持stored procedures的语言，但是并没有随着编程语言的演进而改进
+2. stored procedures不好做开发生命周期的管理：version control, debug, tests, CI/CD, metrics collection
+3. DB通常是performance-sensitive，因为一台DB的instance要服务多台server instance。因此，一段badly written的stored procedure会造成比application code大得多的影响
+
+solutions:
+1. 一些DB开始使用general编程语言来实现stored procedure。`VoltDB uses Java or Groovy, Datomic uses Java or Clojure, and Redis uses Lua`
+
+### Partitioning
+serializability带来的问题是，DB的write吞吐量大大降低。如何scale up throughput？有一个影响很大的因素是数据的partition。如果可以做到一个stored procedure只需要读写一个partition上的数据，那throughtput就可以通过增加CPU core来scale up，每个core服务一个thread，这个thread只特定服务于一个partition
+
+如果无法实现这种划分，就需要额外的coordination来协调多个partition的lock，大大降低throughtput。
+
+## Two-Phase Locking(2PL)
+
 
 
 
