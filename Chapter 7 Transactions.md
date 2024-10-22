@@ -246,10 +246,39 @@ serializability带来的问题是，DB的write吞吐量大大降低。如何scal
 
 ## Two-Phase Locking(2PL)
 
+- 2PL: readers block writers, and writers block readers
+- isolation snapshot: readers never block writers, and writers never block readers
 
 
+### Implementation of two-phase locking
+The lock can either be in shared mode or in exclusive mode:
+- shared mode: for reads. Several reads can hold the lock in shared mode simultaneously.
+- exclusive mode: for writes.  
 
+1. Shared mode and exlusive mode block exclusive mode; Exclusive mode block shared mode.
+2. After a transaction has acquired the lock, it must continue to hold the lock until the end of the transaction. Phase1 is locks are acquired, phase2 is locks are released.
 
+### Performance of two-phase locking
+显而易见，2PL性能很差。尤其是当有一个transaction access了很多object，并且执行很慢的时候，有可能拖垮整个DB
+
+### Predicate locks
+加在condition(如下面的SQL，where语句后的就是condition)上的lock，当read or write命中同样的condition时，需要按照类似2PL lock(shared mode and exclusive mode)来block
+
+```sql
+SELECT * FROM bookings
+WHERE room_id = 123 AND
+end_time > '2018-01-01 12:00' AND
+start_time < '2018-01-01 13:00';
+```
+2PL如果包含predicate locks, 可以实现完全的serializable
+>If two-phase locking includes predicate locks, the database prevents all forms of write skew and other race conditions, and so its isolation becomes serializable.
+
+### Index-raneg locks
+predicate locks的要花时间match基于各种condition的locks，性能是很差的。
+
+有一种简化方案，扩大原本condition到整个index。 比如：原本是booking meeting roomid 1, 2 and 3, 扩大lock对象到整个roomid index。 好处是足够简单，并且index加速了read, write的速度
+
+## Serializable Snapshot Isolation(SSI)
 
 
 
