@@ -280,6 +280,33 @@ predicate locks的要花时间match基于各种condition的locks，性能是很�
 
 ## Serializable Snapshot Isolation(SSI)
 
+SSI是一种新技术，可以在只损失小量performace的前提下，实现full serializability
+>It provides full serializability, but has only a small performance penalty compared to snapshot isolation.
+
+### Pessimistic versus optimistic concurrency control
+这里的乐观和悲观，指的是对于可能发生rice condition预期的态度。传统serializability的实现，是绝对悲观的，所以实现了真正的串行。
+
+之前也有各种关于“乐观”的讨论和实现，SSI的不同在于引入了snapshot isolation
+
+### Decisions based on an outdated premise
+
+Snapshot isolation中一种常见的pattern: read(前提), 然后基于read的结果来执行write. 但是这个前提可能在要write的时候已经尤其其他concurrent writes变化了.
+
+Solution:
+>To be safe, the database needs to assume that any change in the query result (the premise) means that writes in that transaction may be invalid.
+
+### Detect stale MVCC reads
+在transaction commit的时候，检测时候有其他因为snapshot isolation而ignore的writes在此之间先行committed了。
+
+### Detect writes that affect prior reads
+用类似前述index-range lock的方式。当一个transaction write的时候，需要查看其影响到的数据index最近被哪些transaction read过，当write transaction commit的时候，给这些可能受影响的read transactions发出提醒。 受到影响且尚未committed的read transactions需要abort。
+
+### Performance of serializable snapshot isolation
+如开篇所述，SSI得性能接近于snapshot isolation，不像serial execution受限于CPU cores的数量
+
+
+
+
 
 
 
