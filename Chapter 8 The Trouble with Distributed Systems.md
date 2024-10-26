@@ -16,3 +16,21 @@
 分布式系统是一种shared noting system, 机器之间不share memory，也不share disk。仅通过network来通信。但是，这个network是相当的不靠谱。
 
 
+## Network Faults in Practice
+一些实际的案例，说明网络问题是普遍的、无法完全规避的
+
+## Detecting Faults
+在一些特定情况下，可以主动检测特定network faults的。但是没有完美的解法
+>the uncertainty about the network makes it difficult to tell whether a node is working or not. In some
+
+## Timeouts and Unabandoned Delays
+networks通常有着unbounded delays，所以设置timeout没有一个统一标准。timeout需要设置足够合适，过大或者过小都会对系统造成很大影响
+
+
+### Network congestion and queueing
+一些会造成network delay的情况：
+1. network switch: 同时收到多个指向同意destination的packets, 需要one by one执行。没轮到的packet需要排队。如果queue capacity满了，再进来的packet会被丢掉，源头再重试
+2. OS: CPU都busy的情况下，即使已经收到packet，OS也会queue them
+3. virtual machine: CPU要在多个虚拟机之间分时运行，某个当前时刻处在等待CPU状态的虚拟机无法处理incoming packets, which are queued(buffered)
+4. TCP flow control: TCP会做流控，控制其向network发送packet的rate。This means additional queueing at the sender before the data even enters the network.
+5. timeout：超时的packet需要重发。application层会受这种delay影响
