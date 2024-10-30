@@ -34,3 +34,26 @@ networks通常有着unbounded delays，所以设置timeout没有一个统一标�
 3. virtual machine: CPU要在多个虚拟机之间分时运行，某个当前时刻处在等待CPU状态的虚拟机无法处理incoming packets, which are queued(buffered)
 4. TCP flow control: TCP会做流控，控制其向network发送packet的rate。This means additional queueing at the sender before the data even enters the network.
 5. timeout：超时的packet需要重发。application层会受这种delay影响
+
+## Synchronous and Asynchronous Networks
+为啥网络不能够做的足够可靠？这样分布式系统的实现就简单多了，可以依赖于稳定的bounded delay的网络
+
+比如，传统的电话需要实时传输，但是确很少出现延迟或者断联，why？ 因为通信两端分配了专线(circuit)，包括中间跳转的routers，都预留了专门的bandwidth。所以可以实现非常稳定的synchronous通信
+
+### Can we not simply make network delays predictable?
+为啥TCP网络不能和电话网一样实现？
+1. 电话/视频传输过程中，数据量是想对稳定的，所以可以独占一个circuit，充分利用bandwidth，也不浪费
+2. 网络应用（比如email, web...）,这些的传输的数据量、持续时间等是不可预知的，为了应对这种`bursty traffic`的场景，需要更加动态灵活的设计。所以TCP是一种packet-switched protocol, 而不是circuit-switched protocol
+
+# Unreliable clocks
+## Monotonic Versus Time-of-Day Clocks
+### Time-of-day clocks
+以unix timestamp为例，记录了从unix epoch(midnight UTC on January 1, 1970)开始到当前的秒/毫秒。多台机器通过NTP服务器（专门用来同步时间的服务器，与原子钟/GPS等保持一致）来协调一致
+
+### Monotonic clocks
+主要用来计算duration。其时刻本身可能来自于机器启动时间，或者其他任意的时间，没有太大意义。  只用来计算time elapse
+
+## Clock Synchronization and Accuracy
+
+
+
