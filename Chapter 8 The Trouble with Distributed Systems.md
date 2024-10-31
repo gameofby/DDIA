@@ -54,6 +54,28 @@ networks通常有着unbounded delays，所以设置timeout没有一个统一标�
 主要用来计算duration。其时刻本身可能来自于机器启动时间，或者其他任意的时间，没有太大意义。  只用来计算time elapse
 
 ## Clock Synchronization and Accuracy
+Clock Synchronization也是极容易出问题的，书中给出了很多案例。
+
+## Relying on Synchronized Clocks
+incorrect clocks会造成的异常往往是不易察觉的。所以，对synchronized clocks要求很高的software，应该配置相应的监控
+
+### Timestamps for ordering events
+incorrect clock的存在，也会打破前文提到过的_last write wins_, 因为它会打破对来自不同node（不同clock）数据的先后顺序的判定。如下图，逻辑上node3的x是“后于”node1的，但是由于node3的clock慢了几毫秒，当node1和node3同时向node2 sync x时，node2会认为来自node1的`x=1`是most recent value，隐私**错误地**将`x=2`丢弃
+![](/images/incorrect-clock-break-the-LWW.png)
+
+这种情况NTP也无能为力，它的accuracy极限会被network round-trip time的accuracy限制。能做到只有几毫秒的difference已经很优秀了。
+
+所以会有逻辑时钟出现，它类似一个counter，而不是timestamp。会在后文“Ordering Guarantees”详细介绍它
+
+### Clock readings have a confidence interval
+理论上confidence interval的计算方式
+1. 如果你的电脑直接连接着GPS receiver or atomic (caesium) clock，供应商会提供相应的精度范围
+2. 如果你的电脑是从NTP server同步时间，误差大致等于`the expected quartz drift since your last sync with the server` + `NTP server’s uncertainty` + `network round-trip time`
+
+研究表明，使用NTP时间精度最好可以做到10ms量级。如果有network问题很容易涨到100ms量级
+
+所以，你在code中能够读取到的timestamp，实际上应该给出一个置信区间`[earliest, latest]`,而不是一看看似准确的timestamp。Google的Spanner是这么做的
+
 
 
 
