@@ -77,5 +77,14 @@ incorrect clock的存在，也会打破前文提到过的_last write wins_, 因�
 所以，你在code中能够读取到的timestamp，实际上应该给出一个置信区间`[earliest, latest]`,而不是一看看似准确的timestamp。Google的Spanner是这么做的
 
 
+### Synchronized clocks for global snapshots
+在分布式环境中，snapshot isolation的实现依赖于全局单调递增的transaction ID。因为isolation就是通过对比transaction和snapshot的ID来实现的
+
+如果我们要使用synchronized time-of-day clocks的timestamp作为transaction IDs，clock的accuray就格外重要
+
+如前文提到的，Google Spanner为它的TrueTime API提供了clock’s confidence interval，所以可以通过两个interval是否存在重叠的部分来判定ID的先后顺序。具体地，Spanner会在commit transaction之前主动等待interval再执行commit，这样可以保证其transantion时间的准确性
+
+
+## Process Pauses
 
 
