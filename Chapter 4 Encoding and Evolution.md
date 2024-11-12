@@ -173,7 +173,7 @@ reader(old schema) A
 ### Code generation and dynamically typed languages
 
 1. 动态语言没有编译环节。生成的代码不经过编译的校验，有风险
-2. Avro也为静态语言提供了code generation。基于使用场景，Avro可以从自描述（self-describing）的源文件中直接读取metadata(schema)，不一定用得到code generation。比如上面“But what is the writer’s schema?” 提到得第一种场景，schema携带在大块数据头部
+2. Avro也为静态语言提供了code generation。基于使用场景，Avro可以从自描述（self-describing）的源文件中直接读取metadata(schema)，不一定用得到code generation。比如上面“But what is the writer’s schema?” 提到的第一种场景，schema携带在大块数据头部
 
 ## The Merits of Schemas
 binary encoding based on schema相比于JSON、XML等的优势
